@@ -1,0 +1,357 @@
+:root {
+  --primary-color: #004b55;
+  --secondary-color: #2eaf7d;
+  --third-color: #dc2626;
+}
+
+body {
+  font-family: "Cairo", sans-serif;
+}
+
+/* start header section */
+.header {
+  background-color: var(--secondary-color);
+  height: 100px;
+}
+
+.header .ministry-univ {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  align-items: center;
+}
+
+.header .ministry-univ img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #fff;
+}
+
+.header .ministry-univ p {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--primary-color);
+  font-size: 18px;
+  height: 80px;
+  font-weight: 600;
+}
+
+/* start navbar section */
+.navbar {
+  padding: 5px 0;
+  background-color: var(--primary-color);
+  position: sticky;
+  z-index: 10;
+  top: 0;
+  height: 70px;
+  border-bottom: 1px solid;
+}
+
+.navbar .container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.navbar .incubator-logo a {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  color: #ddd;
+}
+
+.navbar .incubator-logo a div {
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+  padding: 5px 0px;
+  color: var(--secondary-color);
+}
+
+.navbar .incubator-logo a div span:first-of-type {
+  color: var(--third-color);
+}
+
+.navbar .incubator-logo img {
+  height: 60px;
+  width: 75px;
+  margin-left: 5px;
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.navbar ul li:not(:last-child) {
+  margin-left: 15px;
+}
+
+.navbar ul li button {
+  background-color: inherit;
+  color: #ddd;
+  border: none;
+}
+
+.navbar ul li button:hover {
+  color: #bbb;
+}
+
+.navbar ul li:not(:last-child) button i {
+  margin-right: 5px;
+}
+
+.navbar ul li:last-child button {
+  border-right: 1px solid #bbb;
+  padding-right: 10px;
+}
+
+.navbar ul li:last-child button i {
+  margin-left: 5px;
+}
+
+/* start landing */
+.landing {
+  background-image: url("/img/home-page/landing.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: left center;
+  height: calc(100vh - 170px);
+  color: #fff;
+}
+
+.landing .container {
+  height: 100%;
+}
+
+.landing .get-started {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100%;
+  width: 70%;
+}
+
+.landing h1 {
+  font-size: 55px;
+  color: var(--secondary-color);
+}
+
+.landing p {
+  color: #888;
+  font-size: 24px;
+  margin-bottom: 25px;
+}
+
+.landing button {
+  width: 150px;
+  height: 50px;
+  border-radius: 15px;
+  border: 2px solid var(--secondary-color);
+  background-color: inherit;
+  color: #fff;
+  font-weight: bold;
+  box-shadow: inset 0 0 800px var(--secondary-color);
+  transition: all 0.3s linear;
+}
+
+.landing button:hover {
+  box-shadow: none;
+}
+/* start make-startup section */
+.make-startup .heading {
+  padding: 30px 0;
+  text-align: center;
+}
+
+.special-heading {
+  font-weight: 700;
+  font-size: 38px;
+  margin: 20px 0px 15px;
+  color: var(--primary-color);
+  text-align: center;
+}
+
+.make-startup .heading p {
+  font: 600;
+  font-size: 18px;
+  color: #555;
+}
+
+.make-startup .cards {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin: 10px 0px;
+}
+
+.make-startup .cards .card {
+  width: 350px;
+  height: 250px;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 30px;
+  margin: 0px 10px 20px;
+  background-color: var(--primary-color);
+  color: #fff;
+  border-radius: 15px;
+  border: 2px solid var(--secondary-color);
+  word-spacing: 2px;
+  transition: 0.1s linear;
+}
+
+.make-startup .cards .card:hover {
+  transform: scale(1.01);
+}
+
+/* start who-we-are section */
+.who-we-are {
+  background-color: var(--primary-color);
+}
+
+.who-we-are .about {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 30px;
+  padding: 30px 0;
+}
+
+.who-we-are .about .slides {
+  grid-column: span 3;
+  aspect-ratio: 16/9 ;
+  position: relative;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.who-we-are .about .slides img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.who-we-are .about .slides button {
+  position: absolute;
+  z-index: 1;
+  height: 30px;
+  width: 30px;
+  top: 50%;
+  margin-top: -15px;
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: 6px;
+  box-shadow: 0 0 2px #888;
+  opacity: 0.6;
+  color: #fff;
+}
+
+.who-we-are .about .slides button:hover {
+  transform: scale(1.08);
+}
+
+.who-we-are .about .slides .prev {
+  right: 10px;
+}
+
+.who-we-are .about .slides .next {
+  left: 10px;
+}
+
+.who-we-are .about .heading-text {
+  grid-column: span 2 / span 2;
+  margin-left: 20px;
+  color: #ccc;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px 0;
+  font-weight: 600;
+  font-size: 18px;
+  word-spacing: 3px;
+}
+
+.who-we-are .about .heading-text h3 {
+  color: var(--secondary-color);
+  font-size: 32px;
+  margin-bottom: 15px;
+}
+/* start incubator-programs section */
+.incubator-programs .programs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  margin: 30px 0;
+}
+
+.incubator-programs .programs .program {
+  width: 350px;
+  height: 450px;
+  text-decoration: none;
+  text-align: center;
+  background-color: var(--primary-color);
+  color: #ddd;
+  border: 2px solid #555;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 15px 10px;
+  position: relative;
+}
+
+.incubator-programs .programs .program .img-container {
+  height: 250px;
+}
+
+.incubator-programs .programs .program .img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.incubator-programs .programs .program h3 {
+  margin: 15px;
+}
+
+.incubator-programs .programs .program p {
+  margin: 15px;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.incubator-programs .programs .program::after {
+  content: "التفاصيل";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 0;
+  height: 40px;
+  width: 100%;
+  font-weight: 700;
+  border-top: 2px solid #666;
+  color: #666;
+}
+
+/* start media queries section  */
+/* medium */
+@media (max-width: 1199px) {
+}
+/* small */
+@media (max-width: 992px) {
+}
+/* x-small */
+@media (max-width: 768px) {
+}
+/* xx-small */
+@media (max-width: 575px) {
+}
