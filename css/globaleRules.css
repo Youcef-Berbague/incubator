@@ -1,8 +1,4 @@
 /* globale rules */
-::selection {
-  color: #327c30;
-}
-
 * {
   box-sizing: border-box;
   margin: 0;

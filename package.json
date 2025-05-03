@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/Youcef-Berbague/incubator#readme",
   "dependencies": {
-    "express": "^5.1.0"
+    "body-parser": "^2.2.0",
+    "express": "^5.1.0",
+    "pg": "^8.15.6"
   }
 }

@@ -1,7 +1,9 @@
 :root {
-  --primary-color: #004b55;
-  --secondary-color: #2eaf7d;
-  --third-color: #dc2626;
+  --primary-color: #232931; /* Dark Graphite Gray : primary background */
+  --secondary-color: #FF6B6B; /* 	Vivid Coral : accent1 (energy) */
+  --third-color: 	#3EDBF0; /* 	Fresh Mint : accent1 (modern innovation) */
+  --forth-color: #F7F3E9; /* 	Warm Light Beige : secondary texts / soft areas */
+  --fifth-color: #00B894; /* Spring Green : buttons */
 }
 
 body {
@@ -14,9 +16,10 @@ body {
   position: fixed;
   z-index: 10;
   top: 0;
-  border-bottom: 1px dashed #888;
-  border-image: repeating-linear-gradient(to right, #888, #888 5px, transparent 5px, transparent 10px) 1;
+  border-bottom: 1px dashed #ccc;
+  border-image: repeating-linear-gradient(to right, #ccc, #ccc 5px, transparent 5px, transparent 10px) 1;
   width: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 .header .container {
@@ -49,7 +52,7 @@ body {
   height: 75px;
   width: 90px;
   margin-left: 5px;
-  filter: drop-shadow(0 0 2px #333);
+  filter: drop-shadow(0 0 2px var(--primary-color));
 }
 
 .header ul {
@@ -97,10 +100,10 @@ body {
 
 /* start landing */
 .landing {
-  background-image: url("/img/home-page/landing.jpg");
+  background-image: url("/img/home-page/abstract-fantasy-landscape-background.jpg");
   background-repeat: no-repeat;
   background-size: cover;
-  background-position: left center;
+  background-position: center left;
   height: 100vh;
   color: #fff;
 }
@@ -120,206 +123,40 @@ body {
 
 .landing h1 {
   font-size: 55px;
-  color: var(--secondary-color);
+  color: var(--forth-color);
+  filter: drop-shadow(0 0 2px var(--fifth-color));
+  pointer-events: none;
 }
 
 .landing p {
-  color: #888;
+  color: var(--forth-color);
+  filter: drop-shadow(0 0 1px var(--secondary-color));
   font-size: 24px;
   margin-bottom: 25px;
+  pointer-events: none;
 }
 
-.landing button {
+.landing a {
+  text-decoration: none;
   width: 150px;
   height: 50px;
   border-radius: 15px;
   border: 2px solid var(--secondary-color);
   background-color: inherit;
-  color: #fff;
+  color: var(--primary-color);
   font-weight: bold;
   box-shadow: inset 0 0 800px var(--secondary-color);
   transition: all 0.3s linear;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.landing button:hover {
+.landing a:hover {
   box-shadow: none;
-}
-/* start make-startup section */
-.make-startup .heading {
-  padding: 30px 0;
-  text-align: center;
-}
-
-.special-heading {
-  font-weight: 700;
-  font-size: 38px;
-  margin: 20px 0px 15px;
-  color: var(--primary-color);
-  text-align: center;
-}
-
-.make-startup .heading p {
-  font: 600;
-  font-size: 18px;
-  color: #555;
-}
-
-.make-startup .cards {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  margin: 10px 0px;
-}
-
-.make-startup .cards .card {
-  width: 350px;
-  height: 250px;
-  font-size: 18px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0px 30px;
-  margin: 0px 10px 20px;
-  background-color: var(--primary-color);
-  color: #fff;
-  border-radius: 15px;
-  border: 2px solid var(--secondary-color);
-  word-spacing: 2px;
-  transition: 0.1s linear;
-}
-
-.make-startup .cards .card:hover {
-  transform: scale(1.01);
-}
-
-/* start who-we-are section */
-.who-we-are {
-  background-color: var(--primary-color);
-}
-
-.who-we-are .about {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 30px;
-  padding: 30px 0;
-}
-
-.who-we-are .about .slides {
-  grid-column: span 3;
-  aspect-ratio: 16/9 ;
-  position: relative;
-  border-radius: 15px;
-  overflow: hidden;
-}
-
-.who-we-are .about .slides img {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-}
-
-.who-we-are .about .slides button {
-  position: absolute;
-  z-index: 1;
-  height: 30px;
-  width: 30px;
-  top: 50%;
-  margin-top: -15px;
-  background-color: var(--primary-color);
-  border: none;
-  border-radius: 6px;
-  box-shadow: 0 0 2px #888;
-  opacity: 0.6;
-  color: #fff;
-}
-
-.who-we-are .about .slides button:hover {
-  transform: scale(1.08);
-}
-
-.who-we-are .about .slides .prev {
-  right: 10px;
-}
-
-.who-we-are .about .slides .next {
-  left: 10px;
-}
-
-.who-we-are .about .heading-text {
-  grid-column: span 2 / span 2;
-  margin-left: 20px;
-  color: #ccc;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 20px 0;
-  font-weight: 600;
-  font-size: 18px;
-  word-spacing: 3px;
-}
-
-.who-we-are .about .heading-text h3 {
   color: var(--secondary-color);
-  font-size: 32px;
-  margin-bottom: 15px;
 }
-/* start incubator-programs section */
-.incubator-programs .programs {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  margin: 30px 0;
-}
-
-.incubator-programs .programs .program {
-  width: 350px;
-  height: 450px;
-  text-decoration: none;
-  text-align: center;
-  background-color: var(--primary-color);
-  color: #ddd;
-  border: 2px solid #555;
-  border-radius: 10px;
-  overflow: hidden;
-  margin: 15px 10px;
-  position: relative;
-}
-
-.incubator-programs .programs .program .img-container {
-  height: 250px;
-}
-
-.incubator-programs .programs .program .img-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.incubator-programs .programs .program h3 {
-  margin: 15px;
-}
-
-.incubator-programs .programs .program p {
-  margin: 15px;
-  font-weight: 600;
-  font-size: 18px;
-}
-
-.incubator-programs .programs .program::after {
-  content: "التفاصيل";
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  bottom: 0;
-  height: 40px;
-  width: 100%;
-  font-weight: 700;
-  border-top: 2px solid #666;
-  color: #666;
-}
+/* end landing */
 
 /* start media queries section  */
 /* medium */
