@@ -1,0 +1,43 @@
+{
+  "name": "UBMA incubator backend",
+  "version": "1.0.0",
+  "description": "this is work of art (incubator)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server",
+    "dev": "nodemon server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Youcef-Berbague/printdz.git"
+  },
+  "author": "Berbague Youcef Al Mahdi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Youcef-Berbague/printdz/issues"
+  },
+  "homepage": "https://github.com/Youcef-Berbague/printdz#readme",
+  "dependencies": {
+    "@prisma/client": "^6.17.1",
+    "axios": "^1.10.0",
+    "bcrypt": "^6.0.0",
+    "cloudinary": "^2.8.0",
+    "compression": "^1.8.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "ms": "^2.1.3",
+    "multer": "^2.0.2",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "prisma": "^6.17.1"
+  }
+}

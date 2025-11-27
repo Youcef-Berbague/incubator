@@ -1,0 +1,9 @@
+// config/roles.js
+module.exports = Object.freeze({
+  superAdmin: 100,
+  admin: 90,
+  coach: 70,
+  supervisor: 60,
+  student: 40,
+  guest: 10
+});

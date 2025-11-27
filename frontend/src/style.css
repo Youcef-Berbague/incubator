@@ -1,0 +1,77 @@
+/* Google Font - Cairo */
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap");
+
+/* Reset and normalize */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary-color: #232931;
+  --secondary-color: #ff6b6b;
+  --third-color: #3edbf0;
+  --forth-color: #f7f3e9;
+  --fifth-color: #00b894;
+}
+
+body {
+  font-family: "Cairo", sans-serif;
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#app {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Container - Responsive & RTL-friendly */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Small */
+@media (min-width: 768px) {
+  .container {
+    max-width: 750px;
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+}
+
+/* Medium */
+@media (min-width: 992px) {
+  .container {
+    max-width: 970px;
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+/* Large */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1170px;
+    padding-left: 50px;
+    padding-right: 50px;
+  }
+}
+
+/* Extra Large */
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1320px;
+  }
+}
