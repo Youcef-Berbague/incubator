@@ -30,7 +30,7 @@ router.post("/projects/register", createNewRegistration);
 router.get(
   "/registrations",
   verifyJWT,
-  verifyRoles([ROLES.admin, ROLES.superAdmin]),
+  verifyRoles(ROLES.admin, ROLES.superAdmin),
   getAll
 );
 
@@ -42,7 +42,7 @@ router.get(
 router.get(
   "/registrations/:id",
   verifyJWT,
-  verifyRoles([ROLES.admin, ROLES.superAdmin]),
+  verifyRoles(ROLES.admin, ROLES.superAdmin),
   getOne
 );
 
@@ -54,7 +54,7 @@ router.get(
 router.patch(
   "/registrations/:id/status",
   verifyJWT,
-  verifyRoles([ROLES.admin, ROLES.superAdmin]),
+  verifyRoles(ROLES.admin, ROLES.superAdmin),
   updateStatus
 );
 
@@ -66,7 +66,7 @@ router.patch(
 router.delete(
   "/registrations/:id",
   verifyJWT,
-  verifyRoles([ROLES.superAdmin]),
+  verifyRoles(ROLES.superAdmin),
   deleteOne
 );
 

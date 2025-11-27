@@ -3,8 +3,6 @@ const jwt = require("jsonwebtoken");
 const verifyJWT = (req, res, next) => {
   const accessToken = req.accessToken;
 
-  
-
   if (!accessToken) {
     return res.sendStatus(401); // غير مصرح له
   }

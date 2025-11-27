@@ -29,8 +29,8 @@ export const useAuthStore = defineStore("auth", {
       this.error = null;
 
       try {
-        await api.post("/api/auth/login", { email, password, rememberMe });
-        const userRes = await api.get("/api/users/me");
+        await api.post("/auth/login", { email, password, rememberMe });
+        const userRes = await api.get("/users/me");
         this.user = userRes.data;
         return true;
       } catch (err) {
@@ -56,9 +56,9 @@ export const useAuthStore = defineStore("auth", {
 
       this.isLoading = true;
       try {
-        const status = await api.get("/api/auth/status");
+        const status = await api.get("/auth/status");
         if (status.data.authenticated) {
-          const userRes = await api.get("/api/users/me");
+          const userRes = await api.get("/users/me");
           this.user = userRes.data;
         } else {
           this.user = null;
@@ -74,7 +74,7 @@ export const useAuthStore = defineStore("auth", {
     // Logout action
     async logout() {
       try {
-        await api.post("/api/auth/logout");
+        await api.post("/auth/logout");
       } catch (err) {
         console.warn("Logout failed");
       } finally {
