@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
-import axios from "axios";
+import { useAuthStore } from "../stores/useAuthStore";
+import api from "../api.js";
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 // Form data
 const projectTitle = ref("");
@@ -31,7 +33,7 @@ const supervisors = ref([
 onMounted(async () => {
   try {
     loading.value = true;
-    const response = await axios.get("http://localhost:3000/api/faculties");
+    const response = await api.get("/faculties");
     faculties.value = response.data;
     loading.value = false;
   } catch (err) {
@@ -80,10 +82,9 @@ watch(numberOfSupervisors, (newVal) => {
 watch(selectedFaculty, async (facultyId) => {
   if (facultyId) {
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/faculties/${facultyId}/departments`
-      );
+      const response = await api.get(`/faculties/${facultyId}/departments`);
       departments.value = response.data;
+      console.log(departments.value)
       selectedDepartment.value = null; // Reset department selection
     } catch (err) {
       console.error("Error loading departments:", err);
@@ -169,15 +170,9 @@ const handleSubmit = async () => {
     error.value = "";
 
     // Submit to backend API
-    const response = await axios.post(
-      "http://localhost:3000/api/projects/register",
-      formData
-    );
+    const response = await api.post("/projects/register", formData);
 
     if (response.data.success) {
-      // Show success message
-      successMessage.value = `Success! Your project "${response.data.data.projectTitle}" has been submitted successfully. Registration ID: ${response.data.data.registrationId}. You will be notified once your project is reviewed.`;
-
       // Clear error
       error.value = "";
 
@@ -205,13 +200,8 @@ const handleSubmit = async () => {
         },
       ];
 
-      // Scroll to top to show success message
-      window.scrollTo({ top: 0, behavior: "smooth" });
-
-      // Navigate to home page after delay
-      setTimeout(() => {
-        router.push("/");
-      }, 5000);
+      // Redirect to success page
+      router.push("/registration-success");
     } else {
       error.value =
         response.data.message || "Submission failed. Please try again.";
@@ -256,7 +246,12 @@ const navigateHome = () => {
         <ul class="nav-links">
           <li><router-link to="/">Home</router-link></li>
           <li><router-link to="/register">Register Project</router-link></li>
-          <li><router-link to="/login">Login</router-link></li>
+          <li v-if="authStore.isAuthenticated">
+            <router-link to="/dashboard">Dashboard</router-link>
+          </li>
+          <li v-else>
+            <router-link to="/login">Login</router-link>
+          </li>
         </ul>
       </div>
     </nav>
@@ -290,7 +285,9 @@ const navigateHome = () => {
             <div class="form-section">
               <h2>Project Information</h2>
               <div class="input-group">
-                <label for="project-title">Project Title *</label>
+                <label for="project-title" class="required"
+                  >Project Title</label
+                >
                 <input
                   type="text"
                   id="project-title"
@@ -305,7 +302,7 @@ const navigateHome = () => {
             <div class="form-section">
               <h2>Team Composition</h2>
               <div class="input-group">
-                <label>Number of Students *</label>
+                <label class="required">Number of Students</label>
                 <div class="radio-group">
                   <label v-for="n in 6" :key="n" class="radio-option">
                     <input
@@ -333,8 +330,10 @@ const navigateHome = () => {
                   <div class="card-body">
                     <div class="input-row">
                       <div class="input-group">
-                        <label :for="`student-${index}-firstname`"
-                          >First Name *</label
+                        <label
+                          :for="`student-${index}-firstname`"
+                          class="required"
+                          >First Name</label
                         >
                         <input
                           type="text"
@@ -345,8 +344,10 @@ const navigateHome = () => {
                         />
                       </div>
                       <div class="input-group">
-                        <label :for="`student-${index}-lastname`"
-                          >Last Name *</label
+                        <label
+                          :for="`student-${index}-lastname`"
+                          class="required"
+                          >Last Name</label
                         >
                         <input
                           type="text"
@@ -359,7 +360,9 @@ const navigateHome = () => {
                     </div>
                     <div class="input-row">
                       <div class="input-group">
-                        <label :for="`student-${index}-email`">Email *</label>
+                        <label :for="`student-${index}-email`" class="required"
+                          >Email</label
+                        >
                         <input
                           type="email"
                           :id="`student-${index}-email`"
@@ -374,14 +377,14 @@ const navigateHome = () => {
                           type="tel"
                           :id="`student-${index}-phone`"
                           v-model="student.phone"
-                          placeholder="+213 XXX XXX XXX"
+                          placeholder="0XXXXXXXXX"
                         />
                       </div>
                     </div>
                     <div class="input-row">
                       <div class="input-group">
-                        <label :for="`student-${index}-level`"
-                          >Academic Level *</label
+                        <label :for="`student-${index}-level`" class="required"
+                          >Academic Level</label
                         >
                         <select
                           :id="`student-${index}-level`"
@@ -406,7 +409,7 @@ const navigateHome = () => {
             <!-- Number of Supervisors -->
             <div class="form-section">
               <div class="input-group">
-                <label>Number of Supervisors *</label>
+                <label class="required">Number of Supervisors</label>
                 <div class="radio-group">
                   <label v-for="n in 3" :key="n" class="radio-option">
                     <input
@@ -434,8 +437,10 @@ const navigateHome = () => {
                   <div class="card-body">
                     <div class="input-row">
                       <div class="input-group">
-                        <label :for="`supervisor-${index}-firstname`"
-                          >First Name *</label
+                        <label
+                          :for="`supervisor-${index}-firstname`"
+                          class="required"
+                          >First Name</label
                         >
                         <input
                           type="text"
@@ -446,8 +451,10 @@ const navigateHome = () => {
                         />
                       </div>
                       <div class="input-group">
-                        <label :for="`supervisor-${index}-lastname`"
-                          >Last Name *</label
+                        <label
+                          :for="`supervisor-${index}-lastname`"
+                          class="required"
+                          >Last Name</label
                         >
                         <input
                           type="text"
@@ -460,8 +467,10 @@ const navigateHome = () => {
                     </div>
                     <div class="input-row">
                       <div class="input-group">
-                        <label :for="`supervisor-${index}-email`"
-                          >Email *</label
+                        <label
+                          :for="`supervisor-${index}-email`"
+                          class="required"
+                          >Email</label
                         >
                         <input
                           type="email"
@@ -477,7 +486,7 @@ const navigateHome = () => {
                           type="tel"
                           :id="`supervisor-${index}-phone`"
                           v-model="supervisor.phone"
-                          placeholder="+213 XXX XXX XXX"
+                          placeholder="0XXXXXXXXX"
                         />
                       </div>
                     </div>
@@ -490,7 +499,7 @@ const navigateHome = () => {
             <div class="form-section">
               <h2>Academic Information</h2>
               <div class="input-group">
-                <label for="faculty">Faculty *</label>
+                <label for="faculty" class="required">Faculty</label>
                 <select id="faculty" v-model="selectedFaculty" required>
                   <option :value="null">Select a faculty</option>
                   <option
@@ -498,13 +507,13 @@ const navigateHome = () => {
                     :key="faculty.id"
                     :value="faculty.id"
                   >
-                    {{ faculty.faculty_name }}
+                    {{ faculty.faculty_name_en }}
                   </option>
                 </select>
               </div>
 
               <div class="input-group" v-if="selectedFaculty">
-                <label for="department">Department *</label>
+                <label for="department" class="required">Department</label>
                 <select id="department" v-model="selectedDepartment" required>
                   <option :value="null">Select a department</option>
                   <option
@@ -512,7 +521,7 @@ const navigateHome = () => {
                     :key="dept.id"
                     :value="dept.id"
                   >
-                    {{ dept.departement_name }}
+                    {{ dept.departement_name_en }}
                   </option>
                 </select>
               </div>
@@ -546,6 +555,8 @@ const navigateHome = () => {
     sans-serif;
   min-height: 100vh;
   background: #fafafa;
+  direction: ltr;
+  text-align: left;
 }
 
 /* Container */
@@ -634,32 +645,10 @@ const navigateHome = () => {
   overflow: hidden;
 }
 
-.form-wrapper::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: #0066ff;
-}
-
 .form-header {
   text-align: center;
   margin-bottom: 40px;
   position: relative;
-}
-
-.form-header::after {
-  content: "";
-  position: absolute;
-  bottom: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 3px;
-  background: #0066ff;
-  border-radius: 2px;
 }
 
 .form-header h1 {
@@ -750,20 +739,74 @@ const navigateHome = () => {
   font-weight: 700;
   color: #1a1a1a;
   margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #0066ff;
   position: relative;
   display: inline-block;
 }
 
-.form-section h2::after {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 50px;
-  height: 2px;
-  background: #1a1a1a;
+/* Special styling for Academic Information section */
+.form-section:last-of-type {
+  background: #f8f9ff;
+  padding: 30px;
+  border-radius: 16px;
+  border: 2px solid #e6edff;
+  box-shadow: 0 4px 20px rgba(0, 102, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.form-section:last-of-type h2 {
+  color: #0066ff;
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
+.form-section:last-of-type .input-group {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 2px solid #e6edff;
+  transition: all 0.3s ease;
+}
+
+.form-section:last-of-type .input-group:hover {
+  border-color: #0066ff;
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.1);
+}
+
+.form-section:last-of-type .input-group label {
+  color: #0066ff;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.form-section:last-of-type .input-group select {
+  border: 2px solid #0066ff;
+  background: white;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 102, 255, 0.1);
+  color: #1a1a1a;
+}
+
+.form-section:last-of-type .input-group select option {
+  color: #1a1a1a;
+  background: white;
+}
+
+.form-section:last-of-type .input-group select option:first-child {
+  color: #999;
+}
+
+.form-section:last-of-type .input-group select:focus {
+  box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.15),
+    0 8px 20px rgba(0, 102, 255, 0.2);
+  border-color: #0052cc;
 }
 
 .form-section h3 {
@@ -773,8 +816,6 @@ const navigateHome = () => {
   margin-bottom: 16px;
   letter-spacing: 0.3px;
 }
-
-/* Input Groups */
 .input-group {
   margin-bottom: 18px;
 }
@@ -786,17 +827,28 @@ const navigateHome = () => {
   color: #1a1a1a;
   margin-bottom: 8px;
   letter-spacing: 0.2px;
+  position: relative;
 }
 
-.input-group label::after {
-  content: "";
+.input-group label.required::after {
+  content: "*";
   display: inline-block;
-  width: 3px;
-  height: 3px;
-  background: #0066ff;
-  border-radius: 50%;
+  color: #ff4444;
+  font-size: 16px;
+  font-weight: 700;
   margin-left: 4px;
   vertical-align: middle;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .input-group input[type="text"],
@@ -812,6 +864,7 @@ const navigateHome = () => {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: white;
   color: #1a1a1a;
+  position: relative;
 }
 
 .input-group input:focus,
@@ -819,11 +872,11 @@ const navigateHome = () => {
   outline: none;
   border-color: #0066ff;
   box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
-  transform: translateY(-1px);
 }
 
 .input-group input::placeholder {
   color: #999;
+  font-style: italic;
 }
 
 .input-group select {
@@ -833,10 +886,24 @@ const navigateHome = () => {
   background-repeat: no-repeat;
   background-position: right 18px center;
   padding-right: 50px;
+  background-color: white;
+  font-weight: 500;
 }
 
 .input-group select:hover {
   border-color: #0066ff;
+}
+
+.input-group select option {
+  padding: 12px;
+  background: white;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.input-group select option:first-child {
+  color: #999;
+  font-style: italic;
 }
 
 /* Radio Groups */
@@ -869,41 +936,22 @@ const navigateHome = () => {
   background: white;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   text-align: center;
   min-height: 48px;
   position: relative;
-  overflow: hidden;
-}
-
-.radio-label::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: #0066ff;
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
 }
 
 .radio-option:hover .radio-label {
   border-color: #0066ff;
   background: #f8f9ff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.15);
 }
 
 .radio-option input[type="radio"]:checked + .radio-label {
   background: #0066ff;
   color: white;
   border-color: #0066ff;
-  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.3);
-}
-
-.radio-option input[type="radio"]:checked + .radio-label::before {
-  transform: scaleX(1);
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
 }
 
 /* Cards Section */
@@ -911,14 +959,18 @@ const navigateHome = () => {
   margin-top: 20px;
   background: #f8f9ff;
   padding: 20px;
-  border-radius: 10px;
-  border: 1px solid #e6edff;
+  border-radius: 12px;
+  border: 2px solid #e6edff;
+}
+
+.cards-section h3 {
+  position: relative;
 }
 
 .info-card {
   background: white;
   border: 2px solid #e6edff;
-  border-radius: 10px;
+  border-radius: 12px;
   margin-bottom: 18px;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -927,8 +979,7 @@ const navigateHome = () => {
 
 .info-card:hover {
   border-color: #0066ff;
-  box-shadow: 0 8px 24px rgba(0, 102, 255, 0.12);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 102, 255, 0.1);
 }
 
 .info-card:last-child {
@@ -945,7 +996,8 @@ const navigateHome = () => {
   font-size: 15px;
   font-weight: 600;
   color: white;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .card-body {
@@ -981,32 +1033,10 @@ const navigateHome = () => {
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   font-family: inherit;
   border: none;
-  position: relative;
-  overflow: hidden;
   letter-spacing: 0.2px;
-}
-
-.btn-primary::before,
-.btn-secondary::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-
-.btn-primary:hover::before,
-.btn-secondary:hover::before {
-  width: 300px;
-  height: 300px;
 }
 
 .btn-primary {
@@ -1017,20 +1047,18 @@ const navigateHome = () => {
 
 .btn-primary:hover:not(:disabled) {
   background: #0052cc;
-  transform: translateY(-3px);
-  box-shadow: 0 12px 35px rgba(0, 102, 255, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.35);
 }
 
 .btn-primary:active:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.3);
+  transform: translateY(0);
+  box-shadow: 0 4px 14px rgba(0, 102, 255, 0.25);
 }
 
 .btn-primary:disabled {
   background: #ccc;
   cursor: not-allowed;
   box-shadow: none;
-  transform: none;
 }
 
 .btn-secondary {
@@ -1040,15 +1068,10 @@ const navigateHome = () => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.btn-secondary::before {
-  background: rgba(0, 0, 0, 0.05);
-}
-
 .btn-secondary:hover {
   background: #f8f8f8;
   border-color: #1a1a1a;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 /* Responsive */

@@ -77,11 +77,70 @@ const getDepartmentsByFacultyId = async (facultyId) => {
     select: {
       id: true,
       departement_name: true,
+      departement_name_en: true,
       faculty_id: true,
     },
     orderBy: {
       departement_name: "asc",
     },
+  });
+};
+
+// Create a new faculty
+const createFaculty = async (facultyData) => {
+  return await prisma.faculties.create({
+    data: {
+      faculty_name: facultyData.faculty_name,
+      faculty_name_en: facultyData.faculty_name_en || null,
+    },
+  });
+};
+
+// Update a faculty
+const updateFaculty = async (facultyId, facultyData) => {
+  return await prisma.faculties.update({
+    where: { id: facultyId },
+    data: {
+      faculty_name: facultyData.faculty_name,
+      faculty_name_en: facultyData.faculty_name_en || null,
+    },
+  });
+};
+
+// Delete a faculty
+const deleteFaculty = async (facultyId) => {
+  return await prisma.faculties.delete({
+    where: { id: facultyId },
+  });
+};
+
+// Create a new department
+const createDepartment = async (departmentData) => {
+  return await prisma.departements.create({
+    data: {
+      departement_name: departmentData.departement_name,
+      departement_name_en: departmentData.departement_name_en || null,
+      faculty_id: departmentData.faculty_id,
+    },
+  });
+};
+
+// Update a department
+const updateDepartment = async (departmentId, departmentData) => {
+  return await prisma.departements.update({
+    where: { id: departmentId },
+    data: {
+      departement_name: departmentData.departement_name,
+      departement_name_en: departmentData.departement_name_en || null,
+      faculty_id: departmentData.faculty_id,
+    },
+  });
+};
+
+// Delete a department
+const deleteDepartment = async (departmentId) => {
+  return await prisma.departements.delete({
+    where: { id: departmentId },
   });
 };
 
@@ -91,4 +150,10 @@ module.exports = {
   getAllDepartments,
   getDepartmentById,
   getDepartmentsByFacultyId,
+  createFaculty,
+  updateFaculty,
+  deleteFaculty,
+  createDepartment,
+  updateDepartment,
+  deleteDepartment,
 };

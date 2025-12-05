@@ -12,11 +12,35 @@ const ROLES = require("../config/rolesList");
 
 const getAll = async (req, res) => {
   try {
+    const requesterRoles = Array.isArray(req.roles)
+      ? req.roles
+      : [req.roles].filter(Boolean);
+
+    // Get the highest role of the requester
+    const requesterMaxRole = Math.max(...requesterRoles);
+
     const allUsers = await getAllUsers();
-    res.json(allUsers);
+
+    // Filter users: only show users with roles lower than requester's max role
+    const filteredUsers = allUsers.filter((user) => {
+      const userRoles = Array.isArray(user.role)
+        ? user.role
+        : [user.role].filter(Boolean);
+      const userMaxRole = userRoles.length > 0 ? Math.max(...userRoles) : 0;
+      return userMaxRole < requesterMaxRole;
+    });
+
+    res.json({
+      success: true,
+      data: filteredUsers,
+      total: filteredUsers.length,
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error fetching users." });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching users.",
+    });
   }
 };
 
@@ -101,7 +125,7 @@ const updateuser = async (req, res) => {
   if (!id) return res.status(400).json({ message: "User ID is required." });
 
   try {
-    // المستخدم العادي لا يمكنه تعديل غيره
+    // Check if requester is admin
     const requesterRoles = Array.isArray(requester?.roles)
       ? requester.roles
       : [requester?.roles].filter(Boolean);
@@ -109,11 +133,19 @@ const updateuser = async (req, res) => {
       requesterRoles.includes(ROLES.admin) ||
       requesterRoles.includes(ROLES.superAdmin);
 
-    if (!isAdmin && requester?.userInfos?.userId !== parseInt(id)) {
-      return res.status(403).json({ message: "Access denied." });
+    // Get the requester's user ID from the access token
+    const requesterId = req.id; // This comes from verifyJWT middleware
+
+    // Users can only update their own account, unless they're admin
+    if (!isAdmin && requesterId !== parseInt(id)) {
+      return res
+        .status(403)
+        .json({
+          message: "Access denied. You can only update your own account.",
+        });
     }
 
-    // العميل لا يمكنه تعديل الدور أو الحالة
+    // Build update data - basic fields available to all users
     const updateData = {};
     if (first_name !== undefined) updateData.first_name = first_name;
     if (last_name !== undefined) updateData.last_name = last_name;
@@ -121,15 +153,32 @@ const updateuser = async (req, res) => {
     if (phone_number !== undefined) updateData.phone_number = phone_number;
     if (password) updateData.password = await bcrypt.hash(password, 10);
 
-    // Only admins can modify these fields
+    // All users can update their academic level
+    if (academic_level !== undefined)
+      updateData.academic_level = academic_level;
+
+    // Only admins can modify these protected fields
     if (isAdmin) {
       if (role !== undefined) updateData.role = role;
       if (status !== undefined) updateData.status = status;
-      if (academic_level !== undefined)
-        updateData.academic_level = academic_level;
       if (p_team_id !== undefined) updateData.p_team_id = p_team_id;
       if (departement_id !== undefined)
         updateData.departement_id = departement_id;
+    } else {
+      // Prevent non-admins from attempting to modify protected fields
+      if (
+        role !== undefined ||
+        status !== undefined ||
+        p_team_id !== undefined ||
+        departement_id !== undefined
+      ) {
+        return res
+          .status(403)
+          .json({
+            message:
+              "You don't have permission to modify role, status, team, or department.",
+          });
+      }
     }
 
     const updatedUser = await updateUserByID({
@@ -210,6 +259,42 @@ const getMe = async (req, res) => {
   }
 };
 
+const getAvailableRoles = async (req, res) => {
+  try {
+    const requesterRoles = Array.isArray(req.roles)
+      ? req.roles
+      : [req.roles].filter(Boolean);
+
+    // Get the highest role of the requester
+    const requesterMaxRole = Math.max(...requesterRoles);
+
+    // Only return roles lower than requester's max role
+    const allRoles = [
+      { value: ROLES.superAdmin, label: "Super Admin", level: 100 },
+      { value: ROLES.admin, label: "Admin", level: 90 },
+      { value: ROLES.coach, label: "Coach", level: 70 },
+      { value: ROLES.supervisor, label: "Supervisor", level: 60 },
+      { value: ROLES.student, label: "Student", level: 40 },
+      { value: ROLES.guest, label: "Guest", level: 10 },
+    ];
+
+    const availableRoles = allRoles.filter(
+      (role) => role.level < requesterMaxRole
+    );
+
+    res.json({
+      success: true,
+      data: availableRoles,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching roles.",
+    });
+  }
+};
+
 module.exports = {
   getAll,
   createNew,
@@ -217,4 +302,5 @@ module.exports = {
   deleteuser,
   getuser,
   getMe,
+  getAvailableRoles,
 };

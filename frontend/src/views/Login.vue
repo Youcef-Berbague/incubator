@@ -44,6 +44,9 @@ const handleLogin = async () => {
     await authStore.login(email.value, password.value, rememberMe.value);
 
     if (authStore.isAuthenticated) {
+      // Small delay to ensure cookies are fully set before navigation
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Check if there's a redirect query parameter
       const redirectPath =
         router.currentRoute.value.query.redirect || "/dashboard";
@@ -219,6 +222,8 @@ const navigateToRegister = () => {
     sans-serif;
   min-height: 100vh;
   background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+  direction: ltr;
+  text-align: left;
 }
 
 /* Container */

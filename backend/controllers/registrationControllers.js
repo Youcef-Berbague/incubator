@@ -8,7 +8,9 @@ const {
   verifyFacultyExists,
   verifyDepartmentBelongsToFaculty,
   checkDuplicateTitle,
+  createApprovedProject,
 } = require("../models/registrationModels");
+const { sendTelegramAlert } = require("../config/notifier");
 
 /**
  * Validate email format
@@ -464,12 +466,72 @@ const updateStatus = async (req, res) => {
       });
     }
 
+    // Prevent re-approval of already approved registrations
+    if (status === "approved" && existingRegistration.status === "approved") {
+      return res.status(400).json({
+        success: false,
+        message: "Registration is already approved",
+        error: "Cannot approve an already approved registration",
+      });
+    }
+
     // Update status
     const updatedRegistration = await updateRegistrationStatus(
       id,
       status,
       reviewerNotes
     );
+
+    // If status is "approved", create project and users
+    if (status === "approved") {
+      try {
+        const result = await createApprovedProject(id);
+
+        // Send Telegram notification with credentials
+        let notificationMessage = `✅ *Project Approved & Created*\n\n`;
+        notificationMessage += `*Project:* ${existingRegistration.title}\n`;
+        notificationMessage += `*Project ID:* ${result.project.id}\n`;
+        notificationMessage += `*Team ID:* ${result.projectTeam.id}\n\n`;
+        notificationMessage += `*User Credentials Created:*\n\n`;
+
+        result.userCredentials.forEach((cred, index) => {
+          notificationMessage += `${index + 1}\\. *${cred.type}:* ${
+            cred.name
+          }\n`;
+          notificationMessage += `   📧 Email: ${cred.email}\n`;
+          notificationMessage += `   🔑 Password: \`${cred.password}\`\n\n`;
+        });
+
+        notificationMessage += `⚠️ *Important:* These passwords are shown only once\\. Please save them securely\\.\n`;
+
+        // Send notification without IP/UA (this is an admin action)
+        await sendTelegramAlert(notificationMessage);
+
+        return res.json({
+          success: true,
+          message: "Registration approved and project created successfully",
+          data: {
+            id: updatedRegistration.id,
+            status: updatedRegistration.status,
+            projectId: result.project.id,
+            teamId: result.projectTeam.id,
+            usersCreated: result.userCredentials.length,
+            credentials: result.userCredentials, // Return credentials in response too
+          },
+        });
+      } catch (approvalError) {
+        console.error("Error creating approved project:", approvalError);
+
+        // Rollback status update if project creation fails
+        await updateRegistrationStatus(id, existingRegistration.status);
+
+        return res.status(500).json({
+          success: false,
+          message: "Failed to create project after approval",
+          error: approvalError.message,
+        });
+      }
+    }
 
     return res.json({
       success: true,

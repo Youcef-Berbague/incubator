@@ -129,12 +129,12 @@ model project {
   team_id                                                                    Int?
   pre_incubation_status                                                      Int?
   acceleration_status                                                        Int?
-  departement_id                                                             Int?
+  departement_id                                                             Int
   evaluation_sheet                                                           evaluation_sheet[]
   jury_project                                                               jury_project[]
   acceleration_status_project_acceleration_statusToacceleration_status       acceleration_status?   @relation("project_acceleration_statusToacceleration_status", fields: [acceleration_status], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_acceleration_status")
-  departements                                                               departements?          @relation(fields: [departement_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_departement_id")
   pre_incubation_status_project_pre_incubation_statusTopre_incubation_status pre_incubation_status? @relation("project_pre_incubation_statusTopre_incubation_status", fields: [pre_incubation_status], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pre_incubation_status")
+  departements                                                               departements           @relation(fields: [departement_id], references: [id], map: "fk_departement_id")
   project_team                                                               project_team?          @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_team_id")
   supervising                                                                supervising[]
 }
@@ -218,18 +218,18 @@ model user_training {
 
 model users {
   id             Int              @id(map: "pk_users") @default(autoincrement())
-  first_name     String           @db.VarChar(30)
-  last_name      String           @db.VarChar(40)
   email          String           @unique @db.VarChar(100)
   phone_number   String           @unique @db.VarChar(10)
   p_team_id      Int?
-  academic_level String?          @db.VarChar(50)
   departement_id Int?
   role           Int[]            @default([])
   status         String?          @db.VarChar(100)
   createdate     DateTime?        @default(now()) @db.Timestamp(6)
   updatedate     DateTime?        @db.Timestamp(6)
   password       String           @db.VarChar(255)
+  academic_level String?          @db.VarChar(50)
+  first_name     String           @db.VarChar(30)
+  last_name      String           @db.VarChar(40)
   jury_membre    jury_membre[]
   refresh_tokens refresh_tokens[]
   supervising    supervising[]

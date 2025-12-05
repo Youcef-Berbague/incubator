@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/useAuthStore";
-import axios from "axios";
+import api from "../../api.js";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -20,17 +20,14 @@ const recentRegistrations = ref([]);
 const loading = ref(false);
 const error = ref("");
 
-// Fetch dashboard data
-const fetchDashboardData = async () => {
+// Fetch dashboard data with retry mechanism for initial load
+const fetchDashboardData = async (retryCount = 0) => {
   loading.value = true;
   error.value = "";
 
   try {
     // Fetch registrations statistics
-    const registrationsRes = await axios.get(
-      "http://localhost:3000/api/registrations?page=1&limit=5",
-      { withCredentials: true }
-    );
+    const registrationsRes = await api.get("/registrations?page=1&limit=5");
 
     if (registrationsRes.data.success) {
       const data = registrationsRes.data.data;
@@ -46,10 +43,7 @@ const fetchDashboardData = async () => {
       ).length;
 
       // Fetch all registrations for accurate counts
-      const allRegistrationsRes = await axios.get(
-        "http://localhost:3000/api/registrations?limit=1000",
-        { withCredentials: true }
-      );
+      const allRegistrationsRes = await api.get("/registrations?limit=1000");
 
       if (allRegistrationsRes.data.success) {
         const allRegs = allRegistrationsRes.data.data.registrations;
@@ -62,10 +56,39 @@ const fetchDashboardData = async () => {
       }
     }
 
-    // TODO: Fetch users count (when users endpoint is available)
-    stats.value.totalUsers = 0;
+    // Fetch users count
+    try {
+      const usersRes = await api.get("/users/all");
+
+      if (usersRes.data.success) {
+        stats.value.totalUsers =
+          usersRes.data.total || usersRes.data.data.length;
+      } else {
+        // Fallback if response structure is different
+        stats.value.totalUsers = Array.isArray(usersRes.data)
+          ? usersRes.data.length
+          : 0;
+      }
+    } catch (usersErr) {
+      console.error("Error fetching users count:", usersErr);
+      stats.value.totalUsers = 0;
+    }
   } catch (err) {
     console.error("Error fetching dashboard data:", err);
+
+    // If it's a 401/403 error and this is the first attempt, retry once after a short delay
+    // This handles the case where cookies aren't set immediately after login
+    if (
+      (err.response?.status === 401 || err.response?.status === 403) &&
+      retryCount === 0
+    ) {
+      console.log("[Dashboard] Retrying after authentication delay...");
+      setTimeout(() => {
+        fetchDashboardData(1); // Retry once
+      }, 500); // Wait 500ms for cookies to be set
+      return; // Don't set loading to false yet
+    }
+
     if (err.response?.status === 401 || err.response?.status === 403) {
       error.value = "You don't have permission to access this data.";
     } else {
@@ -77,7 +100,11 @@ const fetchDashboardData = async () => {
 };
 
 onMounted(() => {
-  fetchDashboardData();
+  // Small delay to ensure cookies from login are properly set
+  // This prevents 401 errors when dashboard loads immediately after login
+  setTimeout(() => {
+    fetchDashboardData();
+  }, 100);
 });
 
 const handleLogout = async () => {
@@ -91,13 +118,23 @@ const navigateHome = () => {
 };
 
 const viewAllRegistrations = () => {
-  // TODO: Navigate to registrations management page
-  console.log("View all registrations");
+  router.push("/dashboard/registrations");
 };
 
 const viewRegistration = (id) => {
-  // TODO: Navigate to registration detail page
-  console.log("View registration:", id);
+  router.push("/dashboard/registrations");
+};
+
+const manageUsers = () => {
+  router.push("/dashboard/users");
+};
+
+const manageFaculties = () => {
+  router.push("/dashboard/faculties");
+};
+
+const manageAccount = () => {
+  router.push("/dashboard/account");
 };
 
 // Status badge color
@@ -153,7 +190,22 @@ const formatDate = (dateString) => {
                 <p class="user-role">Super Administrator</p>
               </div>
               <div class="dropdown-divider"></div>
-              <button class="dropdown-item" @click="router.push('/')">
+              <button
+                class="dropdown-item"
+                @click="
+                  router.push('/dashboard/account');
+                  showUserMenu = false;
+                "
+              >
+                My Account Settings
+              </button>
+              <button
+                class="dropdown-item"
+                @click="
+                  router.push('/');
+                  showUserMenu = false;
+                "
+              >
                 View Website
               </button>
               <div class="dropdown-divider"></div>
@@ -339,22 +391,22 @@ const formatDate = (dateString) => {
               <p>Review and approve project submissions</p>
             </button>
 
-            <button class="action-card">
+            <button class="action-card" @click="manageUsers">
               <div class="action-icon">👥</div>
               <h3>Manage Users</h3>
               <p>Add, edit, or remove user accounts</p>
             </button>
 
-            <button class="action-card">
+            <button class="action-card" @click="manageFaculties">
               <div class="action-icon">🏢</div>
               <h3>Manage Faculties</h3>
               <p>Configure faculties and departments</p>
             </button>
 
-            <button class="action-card">
+            <button class="action-card" @click="manageAccount">
               <div class="action-icon">⚙️</div>
-              <h3>System Settings</h3>
-              <p>Configure system-wide settings</p>
+              <h3>My Account</h3>
+              <p>Update your personal information</p>
             </button>
           </div>
         </div>
@@ -375,6 +427,8 @@ const formatDate = (dateString) => {
     sans-serif;
   min-height: 100vh;
   background: #f5f5f5;
+  direction: ltr;
+  text-align: left;
 }
 
 .container {
@@ -643,6 +697,8 @@ const formatDate = (dateString) => {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 24px;
   margin-bottom: 40px;
+  justify-items: stretch;
+  align-items: stretch;
 }
 
 .stat-card {
@@ -655,6 +711,7 @@ const formatDate = (dateString) => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   border: 2px solid transparent;
+  width: 100%;
 }
 
 .stat-card:hover {
@@ -857,6 +914,8 @@ tr:hover {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
+  justify-items: stretch;
+  align-items: stretch;
 }
 
 .action-card {
@@ -868,6 +927,7 @@ tr:hover {
   transition: all 0.3s ease;
   text-align: left;
   font-family: inherit;
+  width: 100%;
 }
 
 .action-card:hover {

@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/useAuthStore";
 import SuperAdminDashboard from "../components/dashboards/SuperAdminDashboard.vue";
 
+
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -13,14 +14,40 @@ const ROLES = {
   admin: 90,
   coach: 70,
   supervisor: 60,
-  student: 40,
+  student: 40, // Matches backend rolesList.js
   guest: 10,
 };
 
 // Check if user is authenticated and has appropriate role
-onMounted(() => {
+onMounted(async () => {
+  // Ensure auth is initialized
+  if (!authStore.isInitialized) {
+    await authStore.checkAuth();
+  }
+
+  // Check authentication
   if (!authStore.isAuthenticated) {
     router.push("/login");
+    return;
+  }
+
+  // For students, check if they have registered a project
+  const userRole = Array.isArray(authStore.user.role)
+    ? Math.max(...authStore.user.role)
+    : authStore.user.role;
+
+  if (userRole === ROLES.student) {
+    // Ensure project registration status is checked
+    if (authStore.hasProject === null) {
+      await authStore.checkProjectRegistration();
+    }
+
+    // If student hasn't registered a project, redirect to registration page
+    if (authStore.hasProject === false) {
+      router.push("/register-project");
+      return;
+    }
+    // If student has a project, stay on this page (StudentDashboard component will load)
   }
 });
 
@@ -43,9 +70,9 @@ const dashboardComponent = computed(() => {
   } else if (userRole >= ROLES.supervisor) {
     // Future: SupervisorDashboard
     return null;
-  } else if (userRole >= ROLES.student) {
-    // Future: StudentDashboard
-    return null;
+  } else if (userRole === ROLES.student) {
+    // Show student dashboard component if they have a project
+    return authStore.hasProject === true ? StudentDashboard : null;
   }
 
   return null;
@@ -62,7 +89,7 @@ const dashboardTitle = computed(() => {
   if (userRole >= ROLES.admin) return "Admin Dashboard";
   if (userRole >= ROLES.coach) return "Coach Dashboard";
   if (userRole >= ROLES.supervisor) return "Supervisor Dashboard";
-  if (userRole >= ROLES.student) return "Student Dashboard";
+  if (userRole === ROLES.student) return "Student Dashboard";
 
   return "Dashboard";
 });
@@ -101,6 +128,7 @@ const dashboardTitle = computed(() => {
 .dashboard-page {
   min-height: 100vh;
   background: #f5f5f5;
+  direction: ltr;
 }
 
 .loading-container,

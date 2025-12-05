@@ -48,24 +48,39 @@ api.interceptors.response.use(
     // لو ما فيه status (خطأ شبكة مثلاً)
     if (!status) return Promise.reject(error);
 
-    // تجاهل /auth/refresh نفسه
-    if (originalRequest.url === "/api/auth/refresh") {
+    // تجاهل /auth/refresh نفسه و /auth/login و /auth/register
+    const authEndpoints = ["/auth/refresh", "/auth/login", "/auth/register"];
+    if (
+      authEndpoints.some((endpoint) => originalRequest.url?.includes(endpoint))
+    ) {
       const authStore = useAuthStore();
-      authStore.user = null; // نمسح المستخدم فقط
+      if (originalRequest.url?.includes("/auth/refresh")) {
+        authStore.user = null;
+        authStore.isInitialized = true;
+      }
       return Promise.reject(error);
     }
 
-    if (status === 401) {
+    // Handle 401 errors - attempt to refresh token
+    if (status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
       // إذا ما فيه refresh جارٍ → نبدأه
       if (!isRefreshing) {
         isRefreshing = true;
         const authStore = useAuthStore();
 
         refreshPromise = api
-          .get("/api/auth/refresh")
-          .catch(() => {
-            // إذا فشل refresh → امسح المستخدم فقط
+          .get("/auth/refresh")
+          .then(() => {
+            // Successfully refreshed
+            console.log("[API] Token refreshed successfully");
+          })
+          .catch((err) => {
+            // إذا فشل refresh → امسح المستخدم
+            console.error("[API] Refresh failed:", err);
             authStore.user = null;
+            authStore.isInitialized = true;
             throw new Error("Session expired");
           })
           .finally(() => {
@@ -76,8 +91,12 @@ api.interceptors.response.use(
 
       try {
         await refreshPromise;
-        return api(originalRequest); // أعد الطلب الأصلي بعد نجاح refresh
+        // Retry the original request
+        return api(originalRequest);
       } catch (refreshError) {
+        // Refresh failed, redirect to login if needed
+        const authStore = useAuthStore();
+        authStore.user = null;
         return Promise.reject(refreshError);
       }
     }

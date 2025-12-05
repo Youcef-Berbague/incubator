@@ -224,6 +224,127 @@ const checkDuplicateTitle = async (title, facultyId) => {
   return existing !== null;
 };
 
+/**
+ * Generate random password (8 characters: letters + numbers)
+ */
+const generateRandomPassword = () => {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  let password = "";
+  for (let i = 0; i < 8; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
+/**
+ * Create approved project with all relationships
+ * - Creates project in project table
+ * - Creates project_team
+ * - Creates users for students and supervisors
+ * - Links students to team via p_team_id
+ * - Links supervisors to project via supervising table
+ */
+const createApprovedProject = async (registrationId) => {
+  const bcrypt = require("bcrypt");
+  const ROLES = require("../config/rolesList");
+
+  // Get full registration details
+  const registration = await getRegistrationById(registrationId);
+  if (!registration) {
+    throw new Error("Registration not found");
+  }
+
+  const userCredentials = []; // Store plain passwords for notification
+
+  return await prisma.$transaction(async (tx) => {
+    // 1. Create project_team first
+    const projectTeam = await tx.project_team.create({
+      data: {},
+    });
+
+    // 2. Create the project
+    const project = await tx.project.create({
+      data: {
+        title: registration.title,
+        project_code: `PRJ-${Date.now()}-${registration.id}`,
+        departement_id: registration.departement_id || null,
+        team_id: projectTeam.id,
+        incubated: true,
+        progress_percent: 0,
+      },
+    });
+
+    // 3. Create users for students and link to team
+    for (const student of registration.registration_students) {
+      const plainPassword = generateRandomPassword();
+      const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+      const user = await tx.users.create({
+        data: {
+          first_name: student.first_name,
+          last_name: student.last_name,
+          email: student.email,
+          phone_number:
+            student.phone || `05${Math.floor(Math.random() * 100000000)}`,
+          password: hashedPassword,
+          role: [ROLES.student],
+          academic_level: student.academic_level,
+          p_team_id: projectTeam.id, // Link student to team
+          status: "active",
+        },
+      });
+
+      userCredentials.push({
+        type: "Student",
+        name: `${student.first_name} ${student.last_name}`,
+        email: student.email,
+        password: plainPassword,
+      });
+    }
+
+    // 4. Create users for supervisors and link via supervising table
+    for (const supervisor of registration.registration_supervisors) {
+      const plainPassword = generateRandomPassword();
+      const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+      const user = await tx.users.create({
+        data: {
+          first_name: supervisor.first_name,
+          last_name: supervisor.last_name,
+          email: supervisor.email,
+          phone_number:
+            supervisor.phone || `05${Math.floor(Math.random() * 100000000)}`,
+          password: hashedPassword,
+          role: [ROLES.supervisor],
+          departement_id: registration.departements?.id || null,
+          status: "active",
+        },
+      });
+
+      // Link supervisor to project via supervising table
+      await tx.supervising.create({
+        data: {
+          project_id: project.id,
+          supervisor_id: user.id,
+        },
+      });
+
+      userCredentials.push({
+        type: "Supervisor",
+        name: `${supervisor.first_name} ${supervisor.last_name}`,
+        email: supervisor.email,
+        password: plainPassword,
+      });
+    }
+
+    return {
+      project,
+      projectTeam,
+      userCredentials,
+    };
+  });
+};
+
 module.exports = {
   createRegistration,
   getAllRegistrations,
@@ -233,4 +354,5 @@ module.exports = {
   verifyFacultyExists,
   verifyDepartmentBelongsToFaculty,
   checkDuplicateTitle,
+  createApprovedProject,
 };
