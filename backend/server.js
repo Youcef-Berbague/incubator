@@ -58,6 +58,8 @@ app.use(optionalJWT);
 // auth routes
 app.use("/api/auth", require("./routes/authRoutes"));
 
+app.use("/api/ai", require("./routes/aiRoutes"));
+
 // faculties and departments routes (public access for registration forms)
 app.use("/api", require("./routes/facultiesRoutes"));
 
@@ -74,8 +76,6 @@ app.use("/api", require("./routes/partnersRoutes"));
 const verifyJWT = require("./middlewares/verifyJWT");
 
 app.use("/api/users", verifyJWT, require("./routes/usersRoutes"));
-
-app.use("/api/ai", require("./routes/aiRoutes"));
 
 // Jury management routes (authenticated, SuperAdmin/Admin access)
 app.use("/api/juries", require("./routes/juryRoutes"));

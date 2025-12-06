@@ -9,11 +9,42 @@
 }
 
 :root {
-  --primary-color: #232931;
-  --secondary-color: #ff6b6b;
-  --third-color: #3edbf0;
-  --forth-color: #f7f3e9;
-  --fifth-color: #00b894;
+  /* New Color Palette */
+  --e-global-color-primary: #6ec1e4;
+  --e-global-color-secondary: #54595f;
+  --e-global-color-text: #7a7a7a;
+  --e-global-color-accent: #61ce70;
+  --e-global-color-1dce4707: #4054b2;
+  --e-global-color-769d2a82: #23a455;
+  --e-global-color-6888c8cd: #000;
+  --e-global-color-289f59c7: #fff;
+  --e-global-color-red: #ff6b6b;
+
+  /* Main Colors - Primary Usage */
+  --primary-color: var(
+    --e-global-color-accent
+  ); /* #61ce70 - Light Green (Main) */
+  --secondary-color: var(
+    --e-global-color-769d2a82
+  ); /* #23a455 - Forest Green (Main) */
+  --tertiary-color: var(--e-global-color-red); /* #ff6b6b - Red (Main) */
+
+  /* Accent & Support Colors */
+  --blue-primary: var(--e-global-color-primary); /* #6EC1E4 - Light Blue */
+  --blue-accent: var(--e-global-color-1dce4707); /* #4054B2 - Royal Blue */
+  --gray-primary: var(--e-global-color-secondary); /* #54595f - Dark Gray */
+  --text-color: var(--e-global-color-text); /* #7a7a7a - Medium Gray */
+
+  /* Utility Colors */
+  --black-color: var(--e-global-color-6888c8cd); /* #000 - Black */
+  --white-color: var(--e-global-color-289f59c7); /* #fff - White */
+
+  /* Legacy Mappings (for backward compatibility) */
+  --third-color: var(--e-global-color-1dce4707);
+  --forth-color: var(--e-global-color-289f59c7);
+  --fifth-color: var(--e-global-color-769d2a82);
+  --accent-color: var(--e-global-color-accent);
+  --red-color: var(--e-global-color-red);
 }
 
 html {

@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from "vue";
 import { useAuthStore } from "./stores/useAuthStore";
+import AiChat from "./components/AiChat.vue";
 
 const authStore = useAuthStore();
 
@@ -12,6 +13,7 @@ onMounted(async () => {
 
 <template>
   <router-view />
+  <AiChat />
 </template>
 
 <style></style>

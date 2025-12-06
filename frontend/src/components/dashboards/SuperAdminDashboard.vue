@@ -197,8 +197,15 @@ const formatDate = (dateString) => {
     <nav class="dashboard-navbar">
       <div class="container">
         <div class="logo" @click="navigateHome">
-          <span class="logo-text">Badji Mokhtar University</span>
-          <span class="logo-sub">Super Admin Panel</span>
+          <img
+            src="/incubator_logo.png"
+            alt="Badji Mokhtar University Incubator"
+            class="logo-img"
+          />
+          <div class="logo-text-container">
+            <span class="logo-text">Badji Mokhtar University</span>
+            <span class="logo-sub">Super Admin Panel</span>
+          </div>
         </div>
 
         <div class="nav-right">
@@ -552,6 +559,23 @@ const formatDate = (dateString) => {
 .logo {
   cursor: pointer;
   display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.logo-img:hover {
+  transform: scale(1.05);
+}
+
+.logo-text-container {
+  display: flex;
   flex-direction: column;
   gap: 2px;
 }
@@ -560,13 +584,13 @@ const formatDate = (dateString) => {
   font-size: 16px;
   font-weight: 700;
   color: #1a1a1a;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
 }
 
 .logo-sub {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  color: #0066ff;
+  color: #23a455;
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
@@ -596,15 +620,15 @@ const formatDate = (dateString) => {
 }
 
 .user-menu-btn:hover {
-  border-color: #0066ff;
-  background: #f8f9ff;
+  border-color: #61ce70;
+  background: #f0fdf4;
 }
 
 .user-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #0066ff;
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -634,9 +658,9 @@ const formatDate = (dateString) => {
   top: calc(100% + 10px);
   right: 0;
   background: white;
-  border: 2px solid #e6edff;
+  border: 2px solid #e8f5eb;
   border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(97, 206, 112, 0.15);
   min-width: 250px;
   z-index: 1000;
   animation: dropdownSlide 0.3s ease;
@@ -655,7 +679,7 @@ const formatDate = (dateString) => {
 
 .user-info {
   padding: 16px;
-  background: #f8f9ff;
+  background: linear-gradient(135deg, #f0fdf4 0%, #e8f5eb 100%);
   border-radius: 10px 10px 0 0;
 }
 
@@ -674,7 +698,7 @@ const formatDate = (dateString) => {
 
 .user-role {
   font-size: 12px;
-  color: #0066ff;
+  color: #23a455;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -682,7 +706,7 @@ const formatDate = (dateString) => {
 
 .dropdown-divider {
   height: 1px;
-  background: #e6edff;
+  background: #e8f5eb;
   margin: 8px 0;
 }
 
@@ -701,17 +725,17 @@ const formatDate = (dateString) => {
 }
 
 .dropdown-item:hover {
-  background: #f8f9ff;
-  color: #0066ff;
+  background: #f0fdf4;
+  color: #23a455;
 }
 
 .logout-btn {
-  color: #ff4444;
+  color: #ff6b6b;
 }
 
 .logout-btn:hover {
   background: #fff5f5;
-  color: #cc0000;
+  color: #e05555;
 }
 
 /* Dashboard Content */
@@ -771,8 +795,8 @@ const formatDate = (dateString) => {
 }
 
 .sidebar-item:hover {
-  background: #f8f9ff;
-  border-left-color: #0066ff;
+  background: #f0fdf4;
+  border-left-color: #61ce70;
 }
 
 .sidebar-item:hover .sidebar-icon {
@@ -793,7 +817,7 @@ const formatDate = (dateString) => {
 }
 
 .sidebar-item:hover .sidebar-icon {
-  background: #e6edff;
+  background: #e8f5eb;
 }
 
 .sidebar-content {
@@ -885,8 +909,8 @@ const formatDate = (dateString) => {
 .spinner {
   width: 50px;
   height: 50px;
-  border: 4px solid #e6edff;
-  border-top: 4px solid #0066ff;
+  border: 4px solid #e8f5eb;
+  border-top: 4px solid #61ce70;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
@@ -931,8 +955,8 @@ const formatDate = (dateString) => {
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  border-color: #e6edff;
+  box-shadow: 0 6px 20px rgba(97, 206, 112, 0.15);
+  border-color: #e8f5eb;
 }
 
 .stat-icon {
@@ -999,22 +1023,23 @@ const formatDate = (dateString) => {
 }
 
 .btn-view-all {
-  background: #0066ff;
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
   color: white;
   border: none;
   padding: 10px 20px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: inherit;
+  box-shadow: 0 4px 15px rgba(97, 206, 112, 0.25);
 }
 
 .btn-view-all:hover {
-  background: #0052cc;
+  background: linear-gradient(135deg, #23a455 0%, #1a8542 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+  box-shadow: 0 6px 20px rgba(35, 164, 85, 0.4);
 }
 
 /* Empty State */
@@ -1043,9 +1068,8 @@ table {
   width: 100%;
   border-collapse: collapse;
 }
-
 thead {
-  background: #f8f9ff;
+  background: linear-gradient(135deg, #f0fdf4 0%, #e8f5eb 100%);
 }
 
 th {
@@ -1056,7 +1080,7 @@ th {
   color: #1a1a1a;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #e6edff;
+  border-bottom: 2px solid #61ce70;
 }
 
 td {
@@ -1065,9 +1089,8 @@ td {
   font-size: 14px;
   color: #1a1a1a;
 }
-
 tr:hover {
-  background: #f8f9ff;
+  background: #f0fdf4;
 }
 
 .project-title {
@@ -1160,7 +1183,7 @@ tr:hover {
 
   .sidebar-item:hover {
     border-left-color: transparent;
-    border-bottom-color: #0066ff;
+    border-bottom-color: #61ce70;
   }
 
   .sidebar-content h4 {

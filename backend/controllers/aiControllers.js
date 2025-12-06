@@ -34,6 +34,8 @@ const chatWithAI = async (req, res) => {
     // 🧠 تحليل الرد القادم من n8n
     let reply = response.data.output;
 
+    console.log(reply)
+
     // ✅ إعادة الرد والـ sessionId للواجهة
     return res.status(200).json({ reply, sessionId: session });
   } catch (err) {

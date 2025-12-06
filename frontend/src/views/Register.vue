@@ -84,7 +84,7 @@ watch(selectedFaculty, async (facultyId) => {
     try {
       const response = await api.get(`/faculties/${facultyId}/departments`);
       departments.value = response.data;
-      console.log(departments.value)
+      console.log(departments.value);
       selectedDepartment.value = null; // Reset department selection
     } catch (err) {
       console.error("Error loading departments:", err);
@@ -239,9 +239,18 @@ const navigateHome = () => {
     <!-- Navigation -->
     <nav class="navbar">
       <div class="container">
-        <div class="logo" @click="navigateHome">
-          <span class="logo-text">Badji Mokhtar University</span>
-          <span class="logo-sub">Innovation Incubator</span>
+        <div class="logo">
+          <router-link to="/">
+            <img
+              src="/incubator_logo.png"
+              alt="Badji Mokhtar University Incubator"
+              class="logo-img"
+            />
+            <div class="logo-text-container">
+              <span class="logo-text">Badji Mokhtar University</span>
+              <span class="logo-sub">Innovation Incubator</span>
+            </div>
+          </router-link>
         </div>
         <ul class="nav-links">
           <li><router-link to="/">Home</router-link></li>
@@ -554,7 +563,7 @@ const navigateHome = () => {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   min-height: 100vh;
-  background: #fafafa;
+  background: #ffffff;
   direction: ltr;
   text-align: left;
 }
@@ -576,8 +585,10 @@ const navigateHome = () => {
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 20px 0;
+  padding: 12px 0;
   z-index: 1000;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .navbar .container {
@@ -586,24 +597,41 @@ const navigateHome = () => {
   align-items: center;
 }
 
-.logo {
-  cursor: pointer;
+.logo a {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.logo-img:hover {
+  transform: scale(1.05);
+}
+
+.logo-text-container {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 .logo-text {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
   color: #1a1a1a;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
 }
 
 .logo-sub {
-  font-size: 12px;
-  font-weight: 500;
-  color: #666;
+  font-size: 11px;
+  font-weight: 600;
+  color: #23a455;
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
@@ -625,13 +653,14 @@ const navigateHome = () => {
 
 .nav-links a:hover,
 .nav-links a.router-link-active {
-  color: #0066ff;
+  color: #61ce70;
 }
 
 /* Registration Section */
 .registration-section {
   padding: 120px 0 80px;
   min-height: 100vh;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
 }
 
 .form-wrapper {
@@ -730,7 +759,7 @@ const navigateHome = () => {
   top: 0;
   bottom: 0;
   width: 3px;
-  background: #e6edff;
+  background: #e8f5eb;
   border-radius: 2px;
 }
 
@@ -745,17 +774,17 @@ const navigateHome = () => {
 
 /* Special styling for Academic Information section */
 .form-section:last-of-type {
-  background: #f8f9ff;
+  background: #f0fdf4;
   padding: 30px;
   border-radius: 16px;
-  border: 2px solid #e6edff;
-  box-shadow: 0 4px 20px rgba(0, 102, 255, 0.08);
+  border: 2px solid #e8f5eb;
+  box-shadow: 0 4px 20px rgba(97, 206, 112, 0.08);
   position: relative;
   overflow: hidden;
 }
 
 .form-section:last-of-type h2 {
-  color: #0066ff;
+  color: #23a455;
   font-size: 24px;
   margin-bottom: 24px;
 }
@@ -765,17 +794,17 @@ const navigateHome = () => {
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 20px;
-  border: 2px solid #e6edff;
+  border: 2px solid #e8f5eb;
   transition: all 0.3s ease;
 }
 
 .form-section:last-of-type .input-group:hover {
-  border-color: #0066ff;
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.1);
+  border-color: #61ce70;
+  box-shadow: 0 4px 12px rgba(97, 206, 112, 0.1);
 }
 
 .form-section:last-of-type .input-group label {
-  color: #0066ff;
+  color: #23a455;
   font-size: 15px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -784,13 +813,13 @@ const navigateHome = () => {
 }
 
 .form-section:last-of-type .input-group select {
-  border: 2px solid #0066ff;
+  border: 2px solid #61ce70;
   background: white;
   font-weight: 600;
   font-size: 15px;
   padding: 14px 16px;
   border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 102, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(97, 206, 112, 0.1);
   color: #1a1a1a;
 }
 
@@ -804,9 +833,9 @@ const navigateHome = () => {
 }
 
 .form-section:last-of-type .input-group select:focus {
-  box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.15),
-    0 8px 20px rgba(0, 102, 255, 0.2);
-  border-color: #0052cc;
+  box-shadow: 0 0 0 4px rgba(97, 206, 112, 0.15),
+    0 8px 20px rgba(97, 206, 112, 0.2);
+  border-color: #23a455;
 }
 
 .form-section h3 {
@@ -857,7 +886,7 @@ const navigateHome = () => {
 .input-group select {
   width: 100%;
   padding: 12px 14px;
-  border: 2px solid #e6edff;
+  border: 2px solid #e8f5eb;
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
@@ -870,8 +899,8 @@ const navigateHome = () => {
 .input-group input:focus,
 .input-group select:focus {
   outline: none;
-  border-color: #0066ff;
-  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+  border-color: #61ce70;
+  box-shadow: 0 0 0 3px rgba(97, 206, 112, 0.1);
 }
 
 .input-group input::placeholder {
@@ -882,7 +911,7 @@ const navigateHome = () => {
 .input-group select {
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg width='14' height='9' viewBox='0 0 14 9' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%230066ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='14' height='9' viewBox='0 0 14 9' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%2361ce70' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 18px center;
   padding-right: 50px;
@@ -891,7 +920,7 @@ const navigateHome = () => {
 }
 
 .input-group select:hover {
-  border-color: #0066ff;
+  border-color: #61ce70;
 }
 
 .input-group select option {
@@ -943,24 +972,24 @@ const navigateHome = () => {
 }
 
 .radio-option:hover .radio-label {
-  border-color: #0066ff;
-  background: #f8f9ff;
+  border-color: #61ce70;
+  background: #f0fdf4;
 }
 
 .radio-option input[type="radio"]:checked + .radio-label {
-  background: #0066ff;
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
   color: white;
-  border-color: #0066ff;
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
+  border-color: #61ce70;
+  box-shadow: 0 4px 12px rgba(97, 206, 112, 0.25);
 }
 
 /* Cards Section */
 .cards-section {
   margin-top: 20px;
-  background: #f8f9ff;
+  background: #f0fdf4;
   padding: 20px;
   border-radius: 12px;
-  border: 2px solid #e6edff;
+  border: 2px solid #e8f5eb;
 }
 
 .cards-section h3 {
@@ -969,7 +998,7 @@ const navigateHome = () => {
 
 .info-card {
   background: white;
-  border: 2px solid #e6edff;
+  border: 2px solid #e8f5eb;
   border-radius: 12px;
   margin-bottom: 18px;
   overflow: hidden;
@@ -978,8 +1007,8 @@ const navigateHome = () => {
 }
 
 .info-card:hover {
-  border-color: #0066ff;
-  box-shadow: 0 4px 16px rgba(0, 102, 255, 0.1);
+  border-color: #61ce70;
+  box-shadow: 0 4px 16px rgba(97, 206, 112, 0.1);
 }
 
 .info-card:last-child {
@@ -987,7 +1016,7 @@ const navigateHome = () => {
 }
 
 .card-header {
-  background: #0066ff;
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
   padding: 14px 20px;
   border-bottom: none;
 }
@@ -1040,19 +1069,19 @@ const navigateHome = () => {
 }
 
 .btn-primary {
-  background: #0066ff;
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
   color: white;
-  box-shadow: 0 4px 14px rgba(0, 102, 255, 0.25);
+  box-shadow: 0 4px 14px rgba(97, 206, 112, 0.25);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #0052cc;
-  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.35);
+  background: linear-gradient(135deg, #23a455 0%, #1a8542 100%);
+  box-shadow: 0 6px 20px rgba(35, 164, 85, 0.35);
 }
 
 .btn-primary:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 4px 14px rgba(0, 102, 255, 0.25);
+  box-shadow: 0 4px 14px rgba(97, 206, 112, 0.25);
 }
 
 .btn-primary:disabled {

@@ -73,9 +73,18 @@ const navigateToRegister = () => {
     <!-- Navigation -->
     <nav class="navbar">
       <div class="container">
-        <div class="logo" @click="navigateHome">
-          <span class="logo-text">Badji Mokhtar University</span>
-          <span class="logo-sub">Innovation Incubator</span>
+        <div class="logo">
+          <router-link to="/">
+            <img
+              src="/incubator_logo.png"
+              alt="Badji Mokhtar University Incubator"
+              class="logo-img"
+            />
+            <div class="logo-text-container">
+              <span class="logo-text">Badji Mokhtar University</span>
+              <span class="logo-sub">Innovation Incubator</span>
+            </div>
+          </router-link>
         </div>
         <ul class="nav-links">
           <li><router-link to="/">Home</router-link></li>
@@ -221,7 +230,7 @@ const navigateToRegister = () => {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+  background: #ffffff;
   direction: ltr;
   text-align: left;
 }
@@ -243,8 +252,10 @@ const navigateToRegister = () => {
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 20px 0;
+  padding: 12px 0;
   z-index: 1000;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .navbar .container {
@@ -253,24 +264,41 @@ const navigateToRegister = () => {
   align-items: center;
 }
 
-.logo {
-  cursor: pointer;
+.logo a {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.logo-img:hover {
+  transform: scale(1.05);
+}
+
+.logo-text-container {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 .logo-text {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
   color: #1a1a1a;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
 }
 
 .logo-sub {
-  font-size: 12px;
-  font-weight: 500;
-  color: #666;
+  font-size: 11px;
+  font-weight: 600;
+  color: #23a455;
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
@@ -292,7 +320,7 @@ const navigateToRegister = () => {
 
 .nav-links a:hover,
 .nav-links a.router-link-active {
-  color: #0066ff;
+  color: #61ce70;
 }
 
 /* Login Section */
@@ -301,6 +329,7 @@ const navigateToRegister = () => {
   min-height: 100vh;
   display: flex;
   align-items: center;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
 }
 
 .login-wrapper {
@@ -329,7 +358,7 @@ const navigateToRegister = () => {
   left: 0;
   right: 0;
   height: 4px;
-  background: #0066ff;
+  background: linear-gradient(90deg, #61ce70 0%, #23a455 100%);
 }
 
 .login-header {
@@ -400,7 +429,7 @@ const navigateToRegister = () => {
 .input-group input {
   width: 100%;
   padding: 14px 16px;
-  border: 2px solid #e6edff;
+  border: 2px solid #e8f5eb;
   border-radius: 8px;
   font-size: 15px;
   font-family: inherit;
@@ -411,8 +440,8 @@ const navigateToRegister = () => {
 
 .input-group input:focus {
   outline: none;
-  border-color: #0066ff;
-  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+  border-color: #61ce70;
+  box-shadow: 0 0 0 3px rgba(97, 206, 112, 0.1);
   transform: translateY(-1px);
 }
 
@@ -477,7 +506,7 @@ const navigateToRegister = () => {
   width: 18px;
   height: 18px;
   cursor: pointer;
-  accent-color: #0066ff;
+  accent-color: #61ce70;
 }
 
 .checkbox-label input[type="checkbox"]:disabled {
@@ -495,7 +524,7 @@ const navigateToRegister = () => {
 .btn-login {
   width: 100%;
   padding: 16px 32px;
-  background: #0066ff;
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -505,7 +534,7 @@ const navigateToRegister = () => {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
   margin-top: 10px;
-  box-shadow: 0 4px 14px rgba(0, 102, 255, 0.25);
+  box-shadow: 0 4px 14px rgba(97, 206, 112, 0.25);
   position: relative;
   overflow: hidden;
 }
@@ -529,14 +558,14 @@ const navigateToRegister = () => {
 }
 
 .btn-login:hover:not(:disabled) {
-  background: #0052cc;
+  background: linear-gradient(135deg, #23a455 0%, #1a8542 100%);
   transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(0, 102, 255, 0.4);
+  box-shadow: 0 12px 35px rgba(35, 164, 85, 0.4);
 }
 
 .btn-login:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.3);
+  box-shadow: 0 6px 20px rgba(97, 206, 112, 0.3);
 }
 
 .btn-login:disabled {
@@ -563,7 +592,7 @@ const navigateToRegister = () => {
 .link-button {
   background: none;
   border: none;
-  color: #0066ff;
+  color: #23a455;
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
@@ -575,7 +604,7 @@ const navigateToRegister = () => {
 }
 
 .link-button:hover:not(:disabled) {
-  color: #0052cc;
+  color: #61ce70;
   text-decoration-thickness: 3px;
 }
 
@@ -586,7 +615,7 @@ const navigateToRegister = () => {
 
 /* Side Info */
 .side-info {
-  background: #0066ff;
+  background: linear-gradient(135deg, #23a455 0%, #61ce70 100%);
   border-radius: 16px;
   padding: 50px 40px;
   color: white;

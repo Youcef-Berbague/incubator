@@ -31,10 +31,37 @@ const goToHomeNow = () => {
   }
   redirectToHome();
 };
+
+const navigateHome = () => {
+  router.push("/");
+};
 </script>
 
 <template>
   <div class="success-page">
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="container">
+        <div class="logo">
+          <router-link to="/">
+            <img
+              src="/incubator_logo.png"
+              alt="Badji Mokhtar University Incubator"
+              class="logo-img"
+            />
+            <div class="logo-text-container">
+              <span class="logo-text">Badji Mokhtar University</span>
+              <span class="logo-sub">Innovation Incubator</span>
+            </div>
+          </router-link>
+        </div>
+        <ul class="nav-links">
+          <li><router-link to="/">Home</router-link></li>
+          <li><router-link to="/register">Register Project</router-link></li>
+        </ul>
+      </div>
+    </nav>
+
     <div class="success-container">
       <!-- Success Icon -->
       <div class="success-icon-wrapper">
@@ -98,14 +125,100 @@ const goToHomeNow = () => {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   min-height: 100vh;
-  background: #fafbfc;
+  background: #ffffff;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
+  flex-direction: column;
   direction: ltr;
   text-align: center;
   position: relative;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 30px;
+  width: 100%;
+}
+
+/* Navigation */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 12px 0;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.navbar .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo a {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.logo-img:hover {
+  transform: scale(1.05);
+}
+
+.logo-text-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.logo-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.3px;
+}
+
+.logo-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #23a455;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 35px;
+  align-items: center;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #1a1a1a;
+  font-weight: 500;
+  font-size: 15px;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.router-link-active {
+  color: #61ce70;
 }
 
 .success-page::before {
@@ -115,13 +228,16 @@ const goToHomeNow = () => {
   left: 0;
   right: 0;
   height: 300px;
-  background: linear-gradient(180deg, #f0f4ff 0%, transparent 100%);
+  background: linear-gradient(180deg, #f0fdf4 0%, transparent 100%);
   z-index: 0;
 }
 
 .success-container {
   max-width: 550px;
   width: 100%;
+  margin: 0 auto;
+  margin-top: 150px;
+  margin-bottom: 60px;
   background: white;
   border-radius: 24px;
   padding: 60px 50px;
@@ -159,7 +275,7 @@ const goToHomeNow = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 0 12px rgba(34, 197, 94, 0.1);
+  box-shadow: 0 0 0 12px rgba(97, 206, 112, 0.1);
 }
 
 .checkmark {
@@ -168,7 +284,7 @@ const goToHomeNow = () => {
   border-radius: 50%;
   display: block;
   stroke-width: 4;
-  stroke: #22c55e;
+  stroke: #61ce70;
   stroke-miterlimit: 10;
   animation: scale 0.4s ease-in-out 0.5s both;
 }
@@ -178,7 +294,7 @@ const goToHomeNow = () => {
   stroke-dashoffset: 166;
   stroke-width: 4;
   stroke-miterlimit: 10;
-  stroke: #22c55e;
+  stroke: #61ce70;
   fill: none;
   animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
 }
@@ -187,7 +303,7 @@ const goToHomeNow = () => {
   transform-origin: 50% 50%;
   stroke-dasharray: 48;
   stroke-dashoffset: 48;
-  stroke: #22c55e;
+  stroke: #61ce70;
   stroke-width: 4;
   animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
 }
@@ -264,7 +380,7 @@ const goToHomeNow = () => {
 
 .countdown-number {
   display: inline-block;
-  background: #111827;
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
   color: white;
   padding: 4px 14px;
   border-radius: 6px;
@@ -292,14 +408,14 @@ const goToHomeNow = () => {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
   border: none;
-  background: #111827;
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
   color: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   letter-spacing: -0.01em;
 }
 
 .btn-primary:hover {
-  background: #1f2937;
+  background: linear-gradient(135deg, #23a455 0%, #1a8542 100%);
   transform: translateY(-1px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
 }

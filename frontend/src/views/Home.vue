@@ -100,22 +100,22 @@ const programs = [
 
 const testimonials = [
   {
-    name: "Sarah Mitchell",
-    role: "Founder, EcoTech Solutions",
+    name: "Amina Benali",
+    role: "Founder, Smart Agriculture Solutions",
     quote:
-      "The incubator provided the perfect environment to transform our sustainable technology concept into a thriving business. The mentorship was invaluable.",
+      "Badji Mokhtar University Incubator gave us the foundation to transform our agricultural technology idea into a successful startup. The mentorship from experienced entrepreneurs was exceptional.",
   },
   {
-    name: "David Chen",
-    role: "CEO, HealthAI",
+    name: "Karim Meziane",
+    role: "CEO, TechMed Algeria",
     quote:
-      "From ideation to market launch, the support we received was exceptional. We secured funding within six months of joining the program.",
+      "The incubator provided us with workspace, technical resources, and invaluable connections. Within months, we launched our healthcare platform and secured our first partnerships.",
   },
   {
-    name: "Amira Hassan",
-    role: "Co-founder, EduConnect",
+    name: "Yasmine Touati",
+    role: "Co-founder, EduLink",
     quote:
-      "The connections we made and the resources we accessed through the incubator accelerated our growth by years. Best decision we ever made.",
+      "As a student entrepreneur at Badji Mokhtar University, the incubator gave me the confidence and tools to turn my educational platform idea into reality. The support has been tremendous.",
   },
 ];
 </script>
@@ -127,14 +127,19 @@ const testimonials = [
       <div class="container">
         <div class="logo">
           <router-link to="/">
-            <span class="logo-text">Badji Mokhtar University</span>
-            <span class="logo-sub">Innovation Incubator</span>
+            <img
+              src="/incubator_logo.png"
+              alt="Badji Mokhtar University Incubator"
+              class="logo-img"
+            />
+            <div class="logo-text-container">
+              <span class="logo-text">Badji Mokhtar University</span>
+              <span class="logo-sub">Innovation Incubator</span>
+            </div>
           </router-link>
         </div>
         <ul class="nav-links">
           <li><router-link to="/">Home</router-link></li>
-          <li><a href="#programs">Programs</a></li>
-          <li><a href="#impact">Impact</a></li>
           <li><a href="#testimonials">Stories</a></li>
           <li><a href="#contact">Contact</a></li>
 
@@ -194,149 +199,72 @@ const testimonials = [
     <section class="hero">
       <div class="container">
         <div class="hero-content">
-          <span class="badge">Empowering Innovation Since 2020</span>
-          <h1 class="hero-title">Where Ideas Become Reality</h1>
+          <span class="badge">Empowering Algerian Innovation Since 2020</span>
+          <h1 class="hero-title">
+            Transform Your Ideas into Successful Startups
+          </h1>
           <p class="hero-subtitle">
-            Join a community of visionaries, innovators, and entrepreneurs
-            transforming groundbreaking ideas into successful ventures with
-            world-class support and resources.
+            Badji Mokhtar University Incubator supports Algerian entrepreneurs,
+            students, and innovators in building the next generation of
+            successful tech startups with mentorship, resources, and a vibrant
+            community in Annaba.
           </p>
           <div class="hero-actions">
             <button class="btn-primary" @click="navigateToRegister">
-              Apply Now
+              Start Your Journey
             </button>
-            <a href="#programs" class="btn-secondary">Explore Programs</a>
-          </div>
-        </div>
-        <div class="hero-stats">
-          <div class="stat-item">
-            <span class="stat-number">250+</span>
-            <span class="stat-label">Projects Launched</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">80+</span>
-            <span class="stat-label">Startups Created</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">$5M+</span>
-            <span class="stat-label">Funding Raised</span>
+            <a href="#testimonials" class="btn-secondary">Success Stories</a>
           </div>
         </div>
       </div>
     </section>
+
+    <!-- Gradient Transition -->
+    <div class="gradient-transition"></div>
 
     <!-- About Section -->
     <section class="about-section">
       <div class="container">
         <div class="about-grid">
           <div class="about-content">
-            <h2 class="section-title">Nurturing Tomorrow's Innovators</h2>
+            <h2 class="section-title">Building Algeria's Startup Ecosystem</h2>
             <p class="section-text">
-              At Badji Mokhtar University Innovation Incubator, we believe every
-              great company starts with a bold idea. Our mission is to provide
-              aspiring entrepreneurs with the tools, knowledge, and network they
-              need to turn their visions into thriving businesses.
+              Badji Mokhtar University Innovation Incubator is committed to
+              fostering entrepreneurship in Algeria. We provide students,
+              graduates, and aspiring entrepreneurs with comprehensive support
+              to transform innovative ideas into viable businesses that
+              contribute to Algeria's economic development.
             </p>
             <p class="section-text">
-              We offer more than just workspace—we provide a comprehensive
-              ecosystem designed to accelerate growth, foster innovation, and
-              create lasting impact in the entrepreneurial landscape.
+              Located in the heart of Annaba, we offer state-of-the-art
+              facilities, expert mentorship from successful Algerian
+              entrepreneurs, access to funding opportunities, and a
+              collaborative environment where innovation thrives and startups
+              grow.
             </p>
-            <div class="about-features">
-              <div class="feature-item">
-                <h4>Expert Mentorship</h4>
-                <p>
-                  Learn from successful entrepreneurs and industry leaders who
-                  guide you every step of the way.
-                </p>
-              </div>
-              <div class="feature-item">
-                <h4>Strategic Resources</h4>
-                <p>
-                  Access cutting-edge tools, technology, and facilities to bring
-                  your ideas to life.
-                </p>
-              </div>
-              <div class="feature-item">
-                <h4>Investor Network</h4>
-                <p>
-                  Connect with venture capitalists and angel investors ready to
-                  fund promising ventures.
-                </p>
-              </div>
-            </div>
           </div>
           <div class="about-visual">
-            <div class="visual-box box-1"></div>
-            <div class="visual-box box-2"></div>
-            <div class="visual-box box-3"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Programs Section -->
-    <section id="programs" class="programs-section">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">Our Programs</h2>
-          <p class="section-subtitle">
-            Tailored pathways designed to support entrepreneurs at every stage
-            of their journey
-          </p>
-        </div>
-        <div class="programs-grid">
-          <div
-            v-for="(program, index) in programs"
-            :key="index"
-            class="program-card"
-          >
-            <div class="program-duration">{{ program.duration }}</div>
-            <h3 class="program-title">{{ program.title }}</h3>
-            <p class="program-description">{{ program.description }}</p>
-            <a href="#" class="program-link">Learn More →</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Impact Section -->
-    <section id="impact" class="impact-section">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">Our Impact</h2>
-          <p class="section-subtitle">
-            Measuring success through the achievements of our community
-          </p>
-        </div>
-        <div class="impact-grid">
-          <div class="impact-card">
-            <h3 class="impact-number">{{ counters.projects }}+</h3>
-            <p class="impact-label">Innovative Projects</p>
-            <p class="impact-desc">
-              Ideas transformed into market-ready solutions
-            </p>
-          </div>
-          <div class="impact-card">
-            <h3 class="impact-number">{{ counters.startups }}+</h3>
-            <p class="impact-label">Successful Startups</p>
-            <p class="impact-desc">
-              Companies generating revenue and creating jobs
-            </p>
-          </div>
-          <div class="impact-card">
-            <h3 class="impact-number">{{ counters.entrepreneurs }}+</h3>
-            <p class="impact-label">Entrepreneurs Supported</p>
-            <p class="impact-desc">
-              Visionaries empowered to pursue their dreams
-            </p>
-          </div>
-          <div class="impact-card">
-            <h3 class="impact-number">${{ counters.funding }}M+</h3>
-            <p class="impact-label">Capital Raised</p>
-            <p class="impact-desc">
-              Investment secured for portfolio companies
-            </p>
+            <div class="visual-box box-1">
+              <div class="box-content">
+                <div class="box-icon">💡</div>
+                <h3 class="box-title">Innovation Hub</h3>
+                <p class="box-text">Where creativity meets opportunity</p>
+              </div>
+            </div>
+            <div class="visual-box box-2">
+              <div class="box-content">
+                <div class="box-icon">🚀</div>
+                <h3 class="box-title">Launch Pad</h3>
+                <p class="box-text">Accelerate your startup journey</p>
+              </div>
+            </div>
+            <div class="visual-box box-3">
+              <div class="box-content">
+                <div class="box-icon">🎯</div>
+                <h3 class="box-title">Success Path</h3>
+                <p class="box-text">Guided mentorship programs</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -374,13 +302,14 @@ const testimonials = [
     <section class="cta-section">
       <div class="container">
         <div class="cta-content">
-          <h2 class="cta-title">Ready to Build Something Amazing?</h2>
+          <h2 class="cta-title">Ready to Launch Your Algerian Startup?</h2>
           <p class="cta-text">
-            Join hundreds of entrepreneurs who have launched successful ventures
-            through our incubator. Your journey to innovation starts here.
+            Join Badji Mokhtar University's thriving entrepreneurial community.
+            Get access to mentorship, resources, and funding opportunities to
+            turn your innovative idea into a successful business in Algeria.
           </p>
           <button class="btn-cta" @click="navigateToRegister">
-            Start Your Application
+            Apply to the Incubator
           </button>
         </div>
       </div>
@@ -393,16 +322,15 @@ const testimonials = [
           <div class="footer-col">
             <h3 class="footer-title">Innovation Incubator</h3>
             <p class="footer-text">
-              Badji Mokhtar University's premier platform for nurturing
-              entrepreneurship, fostering innovation, and building the next
-              generation of successful businesses.
+              Badji Mokhtar University Annaba's innovation hub dedicated to
+              supporting Algerian entrepreneurs and students in transforming
+              their ideas into successful startups that drive economic growth
+              and technological advancement in Algeria.
             </p>
           </div>
           <div class="footer-col">
             <h4 class="footer-heading">Quick Links</h4>
             <ul class="footer-links">
-              <li><a href="#programs">Programs</a></li>
-              <li><a href="#impact">Impact</a></li>
               <li><a href="#testimonials">Success Stories</a></li>
               <li><a href="#">Apply Now</a></li>
             </ul>
@@ -410,19 +338,19 @@ const testimonials = [
           <div class="footer-col">
             <h4 class="footer-heading">Resources</h4>
             <ul class="footer-links">
-              <li><a href="#">Mentorship</a></li>
-              <li><a href="#">Workshops</a></li>
-              <li><a href="#">Events</a></li>
-              <li><a href="#">Blog</a></li>
+              <li><a href="#">Mentorship Programs</a></li>
+              <li><a href="#">Training Workshops</a></li>
+              <li><a href="#">Startup Events</a></li>
+              <li><a href="#">Funding Support</a></li>
             </ul>
           </div>
           <div class="footer-col">
-            <h4 class="footer-heading">Get in Touch</h4>
+            <h4 class="footer-heading">Contact Us</h4>
             <ul class="footer-contact">
               <li>Badji Mokhtar University</li>
-              <li>Annaba, Algeria</li>
+              <li>BP 12, Annaba 23000, Algeria</li>
               <li>incubator@univ-annaba.dz</li>
-              <li>+213 123 456 789</li>
+              <li>+213 (0)38 87 54 21</li>
             </ul>
           </div>
         </div>
@@ -472,9 +400,10 @@ const testimonials = [
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 20px 0;
+  padding: 12px 0;
   z-index: 1000;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .navbar .container {
@@ -486,21 +415,38 @@ const testimonials = [
 .logo a {
   text-decoration: none;
   display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.logo-img:hover {
+  transform: scale(1.05);
+}
+
+.logo-text-container {
+  display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 .logo-text {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
   color: #1a1a1a;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
 }
 
 .logo-sub {
-  font-size: 12px;
-  font-weight: 500;
-  color: #666;
+  font-size: 11px;
+  font-weight: 600;
+  color: #23a455;
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
@@ -521,42 +467,43 @@ const testimonials = [
 }
 
 .nav-links a:hover {
-  color: #0066ff;
+  color: #61ce70;
 }
 
 .btn-register {
-  background: #0066ff;
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
   color: white !important;
   padding: 10px 24px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 600;
   font-size: 14px;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(97, 206, 112, 0.25);
 }
 
 .btn-register:hover {
-  background: #0052cc !important;
+  background: linear-gradient(135deg, #23a455 0%, #1a8542 100%) !important;
   color: white !important;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 102, 255, 0.3);
+  box-shadow: 0 6px 20px rgba(35, 164, 85, 0.4);
 }
 
 .btn-login-nav {
   background: white;
-  color: #0066ff !important;
+  color: #54595f !important;
   padding: 10px 24px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 600;
   font-size: 14px;
-  border: 2px solid #0066ff;
+  border: 2px solid #54595f;
   transition: all 0.3s ease;
 }
 
 .btn-login-nav:hover {
-  background: #0066ff !important;
+  background: #54595f !important;
   color: white !important;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 102, 255, 0.3);
+  box-shadow: 0 5px 15px rgba(84, 89, 95, 0.3);
 }
 
 /* User Menu */
@@ -567,10 +514,10 @@ const testimonials = [
 .user-menu-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: white;
-  border: 2px solid #e6edff;
-  padding: 8px 16px;
+  border: 2px solid #e8f5eb;
+  padding: 6px 12px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -578,15 +525,15 @@ const testimonials = [
 }
 
 .user-menu-btn:hover {
-  border-color: #0066ff;
-  background: #f8f9ff;
+  border-color: #61ce70;
+  background: #f0fdf4;
 }
 
 .user-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #0066ff;
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
   color: white;
   display: flex;
   align-items: center;
@@ -598,7 +545,7 @@ const testimonials = [
 
 .user-name {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   color: #1a1a1a;
   max-width: 150px;
   overflow: hidden;
@@ -607,7 +554,7 @@ const testimonials = [
 }
 
 .dropdown-arrow {
-  font-size: 10px;
+  font-size: 9px;
   color: #666;
   transition: transform 0.3s ease;
 }
@@ -621,9 +568,9 @@ const testimonials = [
   top: calc(100% + 10px);
   right: 0;
   background: white;
-  border: 2px solid #e6edff;
+  border: 2px solid #e8f5eb;
   border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(97, 206, 112, 0.15);
   min-width: 250px;
   z-index: 1000;
   animation: dropdownSlide 0.3s ease;
@@ -642,7 +589,7 @@ const testimonials = [
 
 .user-info {
   padding: 16px;
-  background: #f8f9ff;
+  background: linear-gradient(135deg, #f0fdf4 0%, #e8f5eb 100%);
   border-radius: 10px 10px 0 0;
 }
 
@@ -663,7 +610,7 @@ const testimonials = [
 
 .dropdown-divider {
   height: 1px;
-  background: #e6edff;
+  background: #e8f5eb;
   margin: 8px 0;
 }
 
@@ -682,25 +629,25 @@ const testimonials = [
 }
 
 .dropdown-item:hover {
-  background: #f8f9ff;
-  color: #0066ff;
+  background: #f0fdf4;
+  color: #23a455;
 }
 
 .logout-btn {
-  color: #ff4444;
+  color: #ff6b6b;
 }
 
 .logout-btn:hover {
   background: #fff5f5;
-  color: #cc0000;
+  color: #e05555;
 }
 
 .btn-login {
-  background: #1a1a1a;
+  background: #54595f;
   color: white;
   border: none;
   padding: 10px 24px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -709,39 +656,82 @@ const testimonials = [
 }
 
 .btn-login:hover {
-  background: #000;
+  background: #3d4146;
   transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(84, 89, 95, 0.3);
 }
 
 /* Hero Section */
 .hero {
-  padding: 180px 0 120px;
-  background: #fafafa;
+  padding: 100px 0 50px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 50%, #ffffff 100%);
+  position: relative;
+  overflow: visible;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(
+    circle,
+    rgba(97, 206, 112, 0.1) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 300px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255, 245, 245, 0.3) 40%,
+    rgba(255, 245, 245, 0.5) 60%,
+    rgba(255, 245, 245, 0.7) 80%,
+    #fff5f5 100%
+  );
+  pointer-events: none;
 }
 
 .hero-content {
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .badge {
   display: inline-block;
-  background: #f0f0f0;
-  color: #1a1a1a;
-  padding: 8px 20px;
+  background: linear-gradient(135deg, #e8f5eb 0%, #f0fdf4 100%);
+  color: #23a455;
+  padding: 10px 24px;
   border-radius: 50px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.5px;
   margin-bottom: 30px;
   text-transform: uppercase;
+  border: 2px solid rgba(97, 206, 112, 0.2);
+  box-shadow: 0 4px 15px rgba(97, 206, 112, 0.1);
 }
 
 .hero-title {
   font-size: 68px;
   font-weight: 800;
-  color: #1a1a1a;
+  background: linear-gradient(135deg, #23a455 0%, #61ce70 50%, #54595f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   line-height: 1.1;
   margin-bottom: 24px;
   letter-spacing: -2px;
@@ -761,34 +751,42 @@ const testimonials = [
   display: flex;
   gap: 16px;
   justify-content: center;
-  margin-bottom: 80px;
+  margin-bottom: 60px;
 }
 
 .btn-primary {
-  background: #0066ff;
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
   color: white;
   border: none;
   padding: 16px 36px;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 12px;
+  font-weight: 700;
   font-size: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: inherit;
+  box-shadow: 0 8px 25px rgba(97, 206, 112, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
-.btn-primary:hover {
-  background: #0052cc;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(0, 102, 255, 0.3);
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #23a455 0%, #1a8542 100%);
+  transition: left 0.4s ease;
 }
 
 .btn-secondary {
   background: transparent;
-  color: #1a1a1a;
-  border: 2px solid #1a1a1a;
+  color: #54595f;
+  border: 2px solid #54595f;
   padding: 14px 34px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 600;
   font-size: 16px;
   cursor: pointer;
@@ -798,9 +796,10 @@ const testimonials = [
 }
 
 .btn-secondary:hover {
-  background: #1a1a1a;
+  background: #54595f;
   color: white;
   transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(84, 89, 95, 0.25);
 }
 
 .hero-stats {
@@ -832,10 +831,30 @@ const testimonials = [
   font-weight: 500;
 }
 
+/* Gradient Transition */
+.gradient-transition {
+  height: 250px;
+  background: linear-gradient(
+    to bottom,
+    #fff5f5 0%,
+    rgba(255, 247, 247, 1) 12%,
+    rgba(255, 249, 249, 1) 24%,
+    rgba(255, 251, 251, 1) 36%,
+    rgba(255, 252, 252, 1) 48%,
+    rgba(255, 253, 253, 1) 60%,
+    rgba(255, 254, 254, 1) 72%,
+    rgba(255, 255, 255, 0.8) 84%,
+    #ffffff 100%
+  );
+  position: relative;
+  margin-top: -50px;
+  z-index: 2;
+}
+
 /* About Section */
 .about-section {
   padding: 120px 0;
-  background: white;
+  background: linear-gradient(to bottom, #ffffff 0%, #fefefe 50%, #fdfdfd 100%);
 }
 
 .about-grid {
@@ -870,9 +889,17 @@ const testimonials = [
 
 .feature-item {
   padding: 24px;
-  background: #fafafa;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
   border-radius: 12px;
-  border-left: 4px solid #0066ff;
+  border-left: 4px solid #61ce70;
+  box-shadow: 0 4px 15px rgba(97, 206, 112, 0.1);
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+  transform: translateX(8px);
+  border-left-width: 6px;
+  box-shadow: 0 6px 20px rgba(97, 206, 112, 0.2);
 }
 
 .feature-item h4 {
@@ -899,28 +926,97 @@ const testimonials = [
   background: #f0f0f0;
   border-radius: 16px;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.visual-box::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.visual-box:hover::after {
+  opacity: 1;
 }
 
 .visual-box:hover {
   transform: translateY(-8px);
 }
 
+.box-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 30px;
+  color: white;
+}
+
+.box-icon {
+  font-size: 60px;
+  margin-bottom: 16px;
+  display: block;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.box-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.box-text {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.95;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
 .box-1 {
   grid-column: 1 / 2;
   grid-row: 1 / 3;
-  background: #0066ff;
+  background: linear-gradient(
+      135deg,
+      rgba(97, 206, 112, 0.95) 0%,
+      rgba(35, 164, 85, 0.95) 100%
+    ),
+    url("https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=800&fit=crop")
+      center/cover;
+  box-shadow: 0 10px 30px rgba(97, 206, 112, 0.3);
 }
 
 .box-2 {
   grid-column: 2 / 3;
   grid-row: 1 / 2;
-  background: #1a1a1a;
+  background: linear-gradient(
+      135deg,
+      rgba(84, 89, 95, 0.9) 0%,
+      rgba(61, 65, 70, 0.9) 100%
+    ),
+    url("https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=300&fit=crop")
+      center/cover;
+  box-shadow: 0 10px 30px rgba(84, 89, 95, 0.3);
 }
 
 .box-3 {
   grid-column: 2 / 3;
   grid-row: 2 / 3;
-  background: #f0f0f0;
+  background: linear-gradient(
+      135deg,
+      rgba(255, 107, 107, 0.85) 0%,
+      rgba(230, 85, 85, 0.85) 100%
+    ),
+    url("https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400&h=300&fit=crop")
+      center/cover;
+  border: 2px solid #ff6b6b;
+  box-shadow: 0 10px 30px rgba(255, 107, 107, 0.2);
 }
 
 /* Programs Section */
@@ -952,25 +1048,44 @@ const testimonials = [
   background: white;
   padding: 40px;
   border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  transition: all 0.4s ease;
   position: relative;
+  overflow: hidden;
+}
+
+.program-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #61ce70 0%, #23a455 100%);
+  transform: scaleX(0);
+  transition: transform 0.4s ease;
+}
+
+.program-card:hover::before {
+  transform: scaleX(1);
 }
 
 .program-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  border-color: rgba(97, 206, 112, 0.3);
+  box-shadow: 0 20px 60px rgba(97, 206, 112, 0.15);
 }
 
 .program-duration {
   display: inline-block;
-  background: #f0f0f0;
-  color: #1a1a1a;
-  padding: 6px 16px;
-  border-radius: 6px;
+  background: linear-gradient(135deg, #e8f5eb 0%, #f0fdf4 100%);
+  color: #23a455;
+  padding: 8px 18px;
+  border-radius: 8px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 20px;
+  border: 1px solid rgba(97, 206, 112, 0.3);
 }
 
 .program-title {
@@ -988,15 +1103,27 @@ const testimonials = [
 }
 
 .program-link {
-  color: #0066ff;
-  font-weight: 600;
+  color: #23a455;
+  font-weight: 700;
   text-decoration: none;
   font-size: 15px;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.program-link::after {
+  content: "→";
+  transition: transform 0.3s ease;
 }
 
 .program-link:hover {
-  color: #0052cc;
+  color: #61ce70;
+}
+
+.program-link:hover::after {
+  transform: translateX(4px);
 }
 
 /* Impact Section */
@@ -1012,22 +1139,64 @@ const testimonials = [
 }
 
 .impact-card {
-  background: #fafafa;
+  background: white;
   padding: 40px 30px;
   border-radius: 16px;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.impact-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #61ce70 0%, #23a455 50%, #ff6b6b 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.impact-card:hover::before {
+  opacity: 1;
+}
+
+.impact-card:nth-child(1):hover {
+  border-color: rgba(97, 206, 112, 0.3);
+  box-shadow: 0 15px 45px rgba(97, 206, 112, 0.2);
+}
+
+.impact-card:nth-child(2):hover {
+  border-color: rgba(35, 164, 85, 0.3);
+  box-shadow: 0 15px 45px rgba(35, 164, 85, 0.2);
+}
+
+.impact-card:nth-child(3):hover {
+  border-color: rgba(255, 107, 107, 0.3);
+  box-shadow: 0 15px 45px rgba(255, 107, 107, 0.2);
+}
+
+.impact-card:nth-child(4):hover {
+  border-color: rgba(84, 89, 95, 0.3);
+  box-shadow: 0 15px 45px rgba(84, 89, 95, 0.2);
 }
 
 .impact-card:hover {
   transform: translateY(-8px);
-  background: #f0f0f0;
+  background: #fafafa;
 }
 
 .impact-number {
   font-size: 48px;
   font-weight: 800;
-  color: #1a1a1a;
+  background: linear-gradient(135deg, #23a455 0%, #61ce70 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 12px;
 }
 
@@ -1047,7 +1216,7 @@ const testimonials = [
 /* Testimonials Section */
 .testimonials-section {
   padding: 120px 0;
-  background: #fafafa;
+  background: linear-gradient(to bottom, #fdfdfd 0%, #fafafa 100%);
 }
 
 .testimonials-grid {
@@ -1060,10 +1229,30 @@ const testimonials = [
   background: white;
   padding: 40px;
   border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 2px solid transparent;
   display: flex;
   flex-direction: column;
   gap: 30px;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.testimonial-card::before {
+  content: '"';
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 120px;
+  font-weight: 800;
+  color: rgba(97, 206, 112, 0.05);
+  font-family: Georgia, serif;
+}
+
+.testimonial-card:hover {
+  border-color: rgba(97, 206, 112, 0.3);
+  box-shadow: 0 15px 45px rgba(97, 206, 112, 0.15);
+  transform: translateY(-8px);
 }
 
 .testimonial-quote {
@@ -1082,7 +1271,7 @@ const testimonials = [
 .author-avatar {
   width: 50px;
   height: 50px;
-  background: #0066ff;
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -1091,6 +1280,7 @@ const testimonials = [
   font-size: 20px;
   font-weight: 700;
   flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(97, 206, 112, 0.3);
 }
 
 .author-name {
@@ -1104,13 +1294,79 @@ const testimonials = [
   font-size: 14px;
   color: #666;
 }
-
 /* CTA Section */
 .cta-section {
-  padding: 120px 0;
-  background: #1a1a1a;
+  padding: 0;
+  background: linear-gradient(
+    to bottom,
+    #fafafa 0%,
+    #e5e5e5 8%,
+    #d0d0d0 16%,
+    #b8b8b8 24%,
+    #a0a0a0 32%,
+    #888888 40%,
+    #707070 48%,
+    #585858 56%,
+    #404040 64%,
+    #2a2a2a 72%,
+    #1a1a1a 80%,
+    #0d0d0d 88%,
+    #000000 100%
+  );
   color: white;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-section::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.05) 1px,
+    transparent 1px
+  );
+  background-size: 50px 50px;
+  animation: movePattern 20s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cta-section::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 1px,
+    transparent 1px
+  );
+  background-size: 50px 50px;
+  animation: movePattern 20s linear infinite;
+  z-index: 0;
+}
+
+@keyframes movePattern {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50px, 50px);
+  }
+}
+
+.cta-content {
+  position: relative;
+  z-index: 2;
+  padding: 120px 0;
 }
 
 .cta-title {
@@ -1118,11 +1374,12 @@ const testimonials = [
   font-weight: 800;
   margin-bottom: 20px;
   letter-spacing: -1px;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
 }
 
 .cta-text {
   font-size: 18px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.95);
   max-width: 650px;
   margin: 0 auto 40px;
   line-height: 1.6;
@@ -1130,27 +1387,54 @@ const testimonials = [
 
 .btn-cta {
   background: white;
-  color: #1a1a1a;
+  color: #222;
   border: none;
   padding: 18px 40px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 700;
   font-size: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: inherit;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 .btn-cta:hover {
-  background: #f0f0f0;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+  background: #f0fdf4;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
 }
 
 /* Footer */
 .footer {
-  padding: 80px 0 40px;
-  background: #f0f0f0;
+  padding: 30px 0 0;
+  background: #000000;
+  position: relative;
+  color: #ffffff;
+}
+
+.footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(97, 206, 112, 0.05) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.footer .container {
+  position: relative;
+  z-index: 2;
+  padding-top: 80px;
+  padding-bottom: 40px;
 }
 
 .footer-grid {
@@ -1163,20 +1447,21 @@ const testimonials = [
 .footer-title {
   font-size: 20px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #ffffff;
   margin-bottom: 16px;
 }
 
 .footer-text {
   font-size: 15px;
-  color: #666;
+  color: #ffffff;
   line-height: 1.7;
+  opacity: 0.9;
 }
 
 .footer-heading {
   font-size: 14px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #ffffff;
   margin-bottom: 20px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -1191,14 +1476,16 @@ const testimonials = [
 }
 
 .footer-links a {
-  color: #666;
+  color: #ffffff;
   text-decoration: none;
   font-size: 15px;
   transition: color 0.3s ease;
+  opacity: 0.9;
 }
 
 .footer-links a:hover {
-  color: #0066ff;
+  color: #61ce70;
+  opacity: 1;
 }
 
 .footer-contact {
@@ -1206,21 +1493,23 @@ const testimonials = [
 }
 
 .footer-contact li {
-  color: #666;
+  color: #ffffff;
   font-size: 15px;
   margin-bottom: 10px;
   line-height: 1.6;
+  opacity: 0.9;
 }
 
 .footer-bottom {
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
   padding-top: 30px;
   text-align: center;
 }
 
 .footer-bottom p {
-  color: #999;
+  color: #ffffff;
   font-size: 14px;
+  opacity: 0.7;
 }
 
 /* Smooth Scroll */
@@ -1230,7 +1519,7 @@ html {
 
 /* Selection */
 ::selection {
-  background: #0066ff;
+  background: #61ce70;
   color: white;
 }
 
@@ -1269,7 +1558,19 @@ html {
   }
 
   .navbar {
-    padding: 15px 0;
+    padding: 10px 0;
+  }
+
+  .logo-img {
+    height: 40px;
+  }
+
+  .logo-text {
+    font-size: 14px;
+  }
+
+  .logo-sub {
+    font-size: 10px;
   }
 
   .nav-links {
@@ -1277,7 +1578,7 @@ html {
   }
 
   .hero {
-    padding: 140px 0 80px;
+    padding: 100px 0 60px;
   }
 
   .hero-title {
