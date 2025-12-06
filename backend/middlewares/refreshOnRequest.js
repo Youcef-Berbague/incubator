@@ -20,7 +20,7 @@ const {
 const { sendTelegramAlert } = require("../config/notifier");
 const getRealIp = require("../utils/getRealIP");
 
-// 🧠 refresh configs 
+// 🧠 refresh configs
 const ROTATE_THRESHOLD_MS = parseInt(
   process.env.ROTATE_THRESHOLD_MS || "86400000",
   10
@@ -87,7 +87,11 @@ const refreshOnRequest = (options = {}) => {
 
       // 🧩 المرحلة 3: فحص بصمة الجهاز (fingerprint)
       const currentFp = getFingerPrint(req);
-      const { similarity } = getFingerprintSimilarity(currentFp, tokenRecord.fingerprint , { });
+      const { similarity } = getFingerprintSimilarity(
+        currentFp,
+        tokenRecord.fingerprint,
+        {}
+      );
 
       if (similarity < 80) {
         await sendTelegramAlert(
@@ -95,7 +99,9 @@ const refreshOnRequest = (options = {}) => {
             tokenRecord.user_id
           }\nsimilarity: ${similarity}%\n\nStoredFingerprint:\n\n ${JSON.stringify(
             tokenRecord.fingerprint || {}
-          )}\n\n CurrentFingerprint:\n\n ${JSON.stringify(currentFp || {})} \n\n`,
+          )}\n\n CurrentFingerprint:\n\n ${JSON.stringify(
+            currentFp || {}
+          )} \n\n`,
           ip,
           ua
         );
@@ -165,18 +171,24 @@ const refreshOnRequest = (options = {}) => {
       if (shouldRotateByTTL || shouldRotateByRequests || shouldRotateByProb) {
         const fingerprint = currentFp || tokenRecord.fingerprint;
         try {
-          await deleteSingleRefreshToken(tokenRecord.uuid);
-          clearCookie(res);
 
           await generateCookieAndSaveRefreshToken(
             tokenRecord.users,
-            !!tokenRecord.remembreMe,
+            !!tokenRecord.remembreme,
             fingerprint,
             req,
             res
           );
+
+          await deleteSingleRefreshToken(tokenRecord.uuid);
+
+          console.log(
+            "[refreshOnRequest] Token rotated successfully for user:",
+            tokenRecord.user_id
+          );
         } catch (e) {
           console.error("[refreshOnRequest] rotation failed", e);
+          clearCookie(res);
         }
       }
 

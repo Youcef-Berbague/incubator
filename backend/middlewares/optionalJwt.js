@@ -26,7 +26,6 @@ const optionalJWT = async (req, res, next) => {
     // ✅ توليد Access Token جديد في الواجهة الخلفية فقط
     const accessToken = await generateAccessToken(decoded.userInfos.userId);
     req.accessToken = accessToken;
-    req.roles = decoded.userInfos.roles;
 
     return next();
   } catch (err) {

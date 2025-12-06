@@ -133,6 +133,34 @@ const manageFaculties = () => {
   router.push("/dashboard/faculties");
 };
 
+const manageFAQs = () => {
+  router.push("/dashboard/faqs");
+};
+
+const manageAccelerationStatuses = () => {
+  router.push("/dashboard/acceleration-statuses");
+};
+
+const manageLocations = () => {
+  router.push("/dashboard/locations");
+};
+
+const managePartners = () => {
+  router.push("/dashboard/partners");
+};
+
+const managePreIncubationStatuses = () => {
+  router.push("/dashboard/pre-incubation-statuses");
+};
+
+const manageJuryMemberRoles = () => {
+  router.push("/dashboard/jury-member-roles");
+};
+
+const manageJuries = () => {
+  router.push("/dashboard/juries");
+};
+
 const manageAccount = () => {
   router.push("/dashboard/account");
 };
@@ -220,194 +248,263 @@ const formatDate = (dateString) => {
 
     <!-- Main Content -->
     <div class="dashboard-content">
-      <div class="container">
-        <!-- Header -->
-        <div class="dashboard-header">
-          <div>
-            <h1>Welcome back, {{ authStore.userName?.split(" ")[0] }}!</h1>
-            <p>Here's what's happening with your incubator today.</p>
-          </div>
+      <!-- Sidebar -->
+      <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+          <h3>Quick Actions</h3>
+          <p>Common tasks</p>
         </div>
 
-        <!-- Error Message -->
-        <div v-if="error" class="error-message">
-          {{ error }}
-        </div>
+        <nav class="sidebar-nav">
+          <button class="sidebar-item" @click="viewAllRegistrations">
+            <div class="sidebar-icon">📋</div>
+            <div class="sidebar-content">
+              <h4>Registrations</h4>
+              <p>Review submissions</p>
+            </div>
+          </button>
 
-        <!-- Loading State -->
-        <div v-if="loading" class="loading-state">
-          <div class="spinner"></div>
-          <p>Loading dashboard data...</p>
-        </div>
+          <button class="sidebar-item" @click="manageUsers">
+            <div class="sidebar-icon">👥</div>
+            <div class="sidebar-content">
+              <h4>Users</h4>
+              <p>Manage accounts</p>
+            </div>
+          </button>
 
-        <!-- Stats Cards -->
-        <div v-else class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon" style="background: #e3f2fd">
-              <span style="color: #2196f3">📊</span>
+          <button class="sidebar-item" @click="manageJuries">
+            <div class="sidebar-icon">⚖️</div>
+            <div class="sidebar-content">
+              <h4>Juries</h4>
+              <p>Manage jury sessions</p>
             </div>
-            <div class="stat-content">
-              <h3>Total Registrations</h3>
-              <p class="stat-number">{{ stats.totalRegistrations }}</p>
-              <span class="stat-label">All time projects</span>
-            </div>
-          </div>
+          </button>
 
-          <div class="stat-card">
-            <div class="stat-icon" style="background: #fff3e0">
-              <span style="color: #ff9800">⏳</span>
-            </div>
-            <div class="stat-content">
-              <h3>Pending Review</h3>
-              <p class="stat-number">{{ stats.pendingRegistrations }}</p>
-              <span class="stat-label">Awaiting approval</span>
-            </div>
-          </div>
+          <div class="sidebar-divider"></div>
+          <div class="sidebar-section-title">System Configuration</div>
 
-          <div class="stat-card">
-            <div class="stat-icon" style="background: #e8f5e9">
-              <span style="color: #4caf50">✅</span>
+          <button class="sidebar-item" @click="manageFaculties">
+            <div class="sidebar-icon">🏢</div>
+            <div class="sidebar-content">
+              <h4>Faculties</h4>
+              <p>Configure departments</p>
             </div>
-            <div class="stat-content">
-              <h3>Approved</h3>
-              <p class="stat-number">{{ stats.approvedRegistrations }}</p>
-              <span class="stat-label">Active projects</span>
-            </div>
-          </div>
+          </button>
 
-          <div class="stat-card">
-            <div class="stat-icon" style="background: #f3e5f5">
-              <span style="color: #9c27b0">👥</span>
+          <button class="sidebar-item" @click="manageFAQs">
+            <div class="sidebar-icon">❓</div>
+            <div class="sidebar-content">
+              <h4>FAQs</h4>
+              <p>Manage questions</p>
             </div>
-            <div class="stat-content">
-              <h3>Total Users</h3>
-              <p class="stat-number">{{ stats.totalUsers }}</p>
-              <span class="stat-label">Registered users</span>
-            </div>
-          </div>
-        </div>
+          </button>
 
-        <!-- Recent Registrations -->
-        <div class="section-card">
-          <div class="section-header">
+          <button class="sidebar-item" @click="manageAccelerationStatuses">
+            <div class="sidebar-icon">🎯</div>
+            <div class="sidebar-content">
+              <h4>Acceleration Status</h4>
+              <p>Project phases</p>
+            </div>
+          </button>
+
+          <button class="sidebar-item" @click="managePreIncubationStatuses">
+            <div class="sidebar-icon">🌱</div>
+            <div class="sidebar-content">
+              <h4>Pre-Incubation Status</h4>
+              <p>Early stages</p>
+            </div>
+          </button>
+
+          <button class="sidebar-item" @click="manageLocations">
+            <div class="sidebar-icon">📍</div>
+            <div class="sidebar-content">
+              <h4>Locations</h4>
+              <p>Manage venues</p>
+            </div>
+          </button>
+
+          <button class="sidebar-item" @click="managePartners">
+            <div class="sidebar-icon">🤝</div>
+            <div class="sidebar-content">
+              <h4>Partners</h4>
+              <p>Stakeholders</p>
+            </div>
+          </button>
+
+          <button class="sidebar-item" @click="manageJuryMemberRoles">
+            <div class="sidebar-icon">👔</div>
+            <div class="sidebar-content">
+              <h4>Jury Roles</h4>
+              <p>Member roles</p>
+            </div>
+          </button>
+
+          <div class="sidebar-divider"></div>
+
+          <button class="sidebar-item" @click="manageAccount">
+            <div class="sidebar-icon">⚙️</div>
+            <div class="sidebar-content">
+              <h4>My Account</h4>
+              <p>Update settings</p>
+            </div>
+          </button>
+        </nav>
+      </aside>
+
+      <div class="dashboard-main">
+        <div class="container">
+          <!-- Header -->
+          <div class="dashboard-header">
             <div>
-              <h2>Recent Project Registrations</h2>
-              <p>Latest submissions from students and researchers</p>
-            </div>
-            <button class="btn-view-all" @click="viewAllRegistrations">
-              View All
-            </button>
-          </div>
-
-          <div v-if="recentRegistrations.length === 0" class="empty-state">
-            <span class="empty-icon">📭</span>
-            <p>No registrations yet</p>
-          </div>
-
-          <div v-else class="registrations-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Project Title</th>
-                  <th>Faculty</th>
-                  <th>Department</th>
-                  <th>Students</th>
-                  <th>Status</th>
-                  <th>Submitted</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="registration in recentRegistrations"
-                  :key="registration.id"
-                >
-                  <td>
-                    <div class="project-title">
-                      {{ registration.projectTitle }}
-                    </div>
-                  </td>
-                  <td>
-                    {{
-                      registration.faculty?.nameEn ||
-                      registration.faculty?.name ||
-                      "N/A"
-                    }}
-                  </td>
-                  <td>
-                    {{
-                      registration.department?.nameEn ||
-                      registration.department?.name ||
-                      "N/A"
-                    }}
-                  </td>
-                  <td>
-                    <span class="badge badge-info">{{
-                      registration.numberOfStudents
-                    }}</span>
-                  </td>
-                  <td>
-                    <span
-                      class="status-badge"
-                      :style="{
-                        background: getStatusColor(registration.status),
-                      }"
-                    >
-                      {{ registration.status.replace("_", " ") }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="date-text">{{
-                      formatDate(registration.submittedAt)
-                    }}</span>
-                  </td>
-                  <td>
-                    <button
-                      class="btn-action"
-                      @click="viewRegistration(registration.id)"
-                    >
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="section-card">
-          <div class="section-header">
-            <div>
-              <h2>Quick Actions</h2>
-              <p>Common administrative tasks</p>
+              <h1>Welcome back, {{ authStore.userName?.split(" ")[0] }}!</h1>
+              <p>Here's what's happening with your incubator today.</p>
             </div>
           </div>
 
-          <div class="quick-actions-grid">
-            <button class="action-card" @click="viewAllRegistrations">
-              <div class="action-icon">📋</div>
-              <h3>Manage Registrations</h3>
-              <p>Review and approve project submissions</p>
-            </button>
+          <!-- Error Message -->
+          <div v-if="error" class="error-message">
+            {{ error }}
+          </div>
 
-            <button class="action-card" @click="manageUsers">
-              <div class="action-icon">👥</div>
-              <h3>Manage Users</h3>
-              <p>Add, edit, or remove user accounts</p>
-            </button>
+          <!-- Loading State -->
+          <div v-if="loading" class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading dashboard data...</p>
+          </div>
 
-            <button class="action-card" @click="manageFaculties">
-              <div class="action-icon">🏢</div>
-              <h3>Manage Faculties</h3>
-              <p>Configure faculties and departments</p>
-            </button>
+          <!-- Stats Cards -->
+          <div v-else class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon" style="background: #e3f2fd">
+                <span style="color: #2196f3">📊</span>
+              </div>
+              <div class="stat-content">
+                <h3>Total Registrations</h3>
+                <p class="stat-number">{{ stats.totalRegistrations }}</p>
+                <span class="stat-label">All time projects</span>
+              </div>
+            </div>
 
-            <button class="action-card" @click="manageAccount">
-              <div class="action-icon">⚙️</div>
-              <h3>My Account</h3>
-              <p>Update your personal information</p>
-            </button>
+            <div class="stat-card">
+              <div class="stat-icon" style="background: #fff3e0">
+                <span style="color: #ff9800">⏳</span>
+              </div>
+              <div class="stat-content">
+                <h3>Pending Review</h3>
+                <p class="stat-number">{{ stats.pendingRegistrations }}</p>
+                <span class="stat-label">Awaiting approval</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon" style="background: #e8f5e9">
+                <span style="color: #4caf50">✅</span>
+              </div>
+              <div class="stat-content">
+                <h3>Approved</h3>
+                <p class="stat-number">{{ stats.approvedRegistrations }}</p>
+                <span class="stat-label">Active projects</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon" style="background: #f3e5f5">
+                <span style="color: #9c27b0">👥</span>
+              </div>
+              <div class="stat-content">
+                <h3>Total Users</h3>
+                <p class="stat-number">{{ stats.totalUsers }}</p>
+                <span class="stat-label">Registered users</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Registrations -->
+          <div class="section-card">
+            <div class="section-header">
+              <div>
+                <h2>Recent Project Registrations</h2>
+                <p>Latest submissions from students and researchers</p>
+              </div>
+              <button class="btn-view-all" @click="viewAllRegistrations">
+                View All
+              </button>
+            </div>
+
+            <div v-if="recentRegistrations.length === 0" class="empty-state">
+              <span class="empty-icon">📭</span>
+              <p>No registrations yet</p>
+            </div>
+
+            <div v-else class="registrations-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Project Title</th>
+                    <th>Faculty</th>
+                    <th>Department</th>
+                    <th>Students</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="registration in recentRegistrations"
+                    :key="registration.id"
+                  >
+                    <td>
+                      <div class="project-title">
+                        {{ registration.projectTitle }}
+                      </div>
+                    </td>
+                    <td>
+                      {{
+                        registration.faculty?.nameEn ||
+                        registration.faculty?.name ||
+                        "N/A"
+                      }}
+                    </td>
+                    <td>
+                      {{
+                        registration.department?.nameEn ||
+                        registration.department?.name ||
+                        "N/A"
+                      }}
+                    </td>
+                    <td>
+                      <span class="badge badge-info">{{
+                        registration.numberOfStudents
+                      }}</span>
+                    </td>
+                    <td>
+                      <span
+                        class="status-badge"
+                        :style="{
+                          background: getStatusColor(registration.status),
+                        }"
+                      >
+                        {{ registration.status.replace("_", " ") }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="date-text">{{
+                        formatDate(registration.submittedAt)
+                      }}</span>
+                    </td>
+                    <td>
+                      <button
+                        class="btn-action"
+                        @click="viewRegistration(registration.id)"
+                      >
+                        View Details
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -416,12 +513,6 @@ const formatDate = (dateString) => {
 </template>
 
 <style scoped>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 .super-admin-dashboard {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -429,12 +520,16 @@ const formatDate = (dateString) => {
   background: #f5f5f5;
   direction: ltr;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 30px;
+  padding: 0 24px;
   width: 100%;
 }
 
@@ -442,11 +537,10 @@ const formatDate = (dateString) => {
 .dashboard-navbar {
   background: white;
   border-bottom: 1px solid #e0e0e0;
-  padding: 20px 0;
-  position: sticky;
-  top: 0;
+  padding: 12px 0;
   z-index: 100;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
 }
 
 .dashboard-navbar .container {
@@ -463,14 +557,14 @@ const formatDate = (dateString) => {
 }
 
 .logo-text {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #1a1a1a;
   letter-spacing: -0.5px;
 }
 
 .logo-sub {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #0066ff;
   letter-spacing: 0.5px;
@@ -480,7 +574,7 @@ const formatDate = (dateString) => {
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 /* User Menu */
@@ -491,10 +585,10 @@ const formatDate = (dateString) => {
 .user-menu-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: white;
   border: 2px solid #e6edff;
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -507,8 +601,8 @@ const formatDate = (dateString) => {
 }
 
 .user-avatar {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: #0066ff;
   color: white;
@@ -516,13 +610,13 @@ const formatDate = (dateString) => {
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   text-transform: uppercase;
 }
 
 .user-name {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   color: #1a1a1a;
   max-width: 150px;
   overflow: hidden;
@@ -531,7 +625,7 @@ const formatDate = (dateString) => {
 }
 
 .dropdown-arrow {
-  font-size: 10px;
+  font-size: 9px;
   color: #666;
 }
 
@@ -622,26 +716,147 @@ const formatDate = (dateString) => {
 
 /* Dashboard Content */
 .dashboard-content {
-  padding: 40px 0 80px;
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+/* Sidebar */
+.dashboard-sidebar {
+  width: 240px;
+  background: white;
+  border-right: 1px solid #e0e0e0;
+  padding: 20px 0;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  padding: 0 20px 16px;
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 8px;
+}
+
+.sidebar-header h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 3px;
+  letter-spacing: -0.3px;
+}
+
+.sidebar-header p {
+  font-size: 11px;
+  color: #666;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-item:hover {
+  background: #f8f9ff;
+  border-left-color: #0066ff;
+}
+
+.sidebar-item:hover .sidebar-icon {
+  transform: scale(1.1);
+}
+
+.sidebar-icon {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.sidebar-item:hover .sidebar-icon {
+  background: #e6edff;
+}
+
+.sidebar-content {
+  flex: 1;
+}
+
+.sidebar-content h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 2px;
+}
+
+.sidebar-content p {
+  font-size: 11px;
+  color: #666;
+  line-height: 1.3;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 12px 20px;
+}
+
+.sidebar-section-title {
+  padding: 12px 20px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Main Content Area */
+.dashboard-main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.dashboard-main .container {
+  max-width: 1200px;
+  padding: 30px 24px;
 }
 
 .dashboard-header {
-  margin-bottom: 35px;
+  margin-bottom: 28px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .dashboard-header h1 {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: #1a1a1a;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   letter-spacing: -0.5px;
 }
 
 .dashboard-header p {
-  font-size: 16px;
+  font-size: 14px;
   color: #666;
 }
 
@@ -694,19 +909,19 @@ const formatDate = (dateString) => {
 /* Stats Grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 24px;
-  margin-bottom: 40px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
   justify-items: stretch;
   align-items: stretch;
 }
 
 .stat-card {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 10px;
+  padding: 20px;
   display: flex;
-  gap: 20px;
+  gap: 16px;
   align-items: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
@@ -715,70 +930,71 @@ const formatDate = (dateString) => {
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   border-color: #e6edff;
 }
 
 .stat-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 24px;
+  flex-shrink: 0;
 }
 
 .stat-content h3 {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
   color: #666;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .stat-number {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: #1a1a1a;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   line-height: 1;
 }
 
 .stat-label {
-  font-size: 13px;
+  font-size: 12px;
   color: #999;
 }
 
 /* Section Card */
 .section-card {
   background: white;
-  border-radius: 12px;
-  padding: 30px;
+  border-radius: 10px;
+  padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
-  padding-bottom: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
   border-bottom: 2px solid #f0f0f0;
 }
 
 .section-header h2 {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   color: #1a1a1a;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .section-header p {
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
 }
 
@@ -904,96 +1120,91 @@ tr:hover {
   font-family: inherit;
 }
 
-.btn-action:hover {
-  background: #0066ff;
-  color: white;
-}
-
-/* Quick Actions */
-.quick-actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  justify-items: stretch;
-  align-items: stretch;
-}
-
-.action-card {
-  background: #f8f9ff;
-  border: 2px solid #e6edff;
-  border-radius: 12px;
-  padding: 24px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: left;
-  font-family: inherit;
-  width: 100%;
-}
-
-.action-card:hover {
-  background: white;
-  border-color: #0066ff;
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 102, 255, 0.15);
-}
-
-.action-icon {
-  font-size: 36px;
-  margin-bottom: 12px;
-}
-
-.action-card h3 {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 6px;
-}
-
-.action-card p {
-  font-size: 13px;
-  color: #666;
-  line-height: 1.5;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
-  .container {
-    padding: 0 20px;
+  .super-admin-dashboard {
+    height: auto;
+    overflow: auto;
   }
 
   .dashboard-content {
-    padding: 30px 0 60px;
+    flex-direction: column;
+    overflow: auto;
+  }
+
+  .dashboard-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 16px 0;
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .sidebar-item {
+    flex-direction: column;
+    min-width: 100px;
+    padding: 10px;
+    text-align: center;
+    gap: 6px;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+
+  .sidebar-item:hover {
+    border-left-color: transparent;
+    border-bottom-color: #0066ff;
+  }
+
+  .sidebar-content h4 {
+    font-size: 11px;
+  }
+
+  .sidebar-content p {
+    display: none;
+  }
+
+  .dashboard-main {
+    overflow-y: visible;
+  }
+
+  .dashboard-main .container {
+    padding: 20px 16px;
   }
 
   .dashboard-header h1 {
-    font-size: 26px;
+    font-size: 22px;
   }
 
   .stats-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .section-card {
-    padding: 20px;
+    padding: 16px;
   }
 
   .section-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 15px;
+    gap: 12px;
   }
 
   .registrations-table {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   th,
   td {
-    padding: 10px;
-  }
-
-  .quick-actions-grid {
-    grid-template-columns: 1fr;
+    padding: 8px;
   }
 }
 </style>

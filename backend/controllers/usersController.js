@@ -120,19 +120,18 @@ const updateuser = async (req, res) => {
     p_team_id,
     departement_id,
   } = req.body;
-  const requester = req.user;
+  const requesterRoles = req.roles;
 
   if (!id) return res.status(400).json({ message: "User ID is required." });
 
   try {
     // Check if requester is admin
-    const requesterRoles = Array.isArray(requester?.roles)
-      ? requester.roles
-      : [requester?.roles].filter(Boolean);
+    const requesterRolesArray = Array.isArray(requesterRoles)
+      ? requesterRoles
+      : [requesterRoles].filter(Boolean);
     const isAdmin =
-      requesterRoles.includes(ROLES.admin) ||
-      requesterRoles.includes(ROLES.superAdmin);
-
+      requesterRolesArray.includes(ROLES.admin) ||
+      requesterRolesArray.includes(ROLES.superAdmin);
     // Get the requester's user ID from the access token
     const requesterId = req.id; // This comes from verifyJWT middleware
 

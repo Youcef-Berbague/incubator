@@ -64,11 +64,26 @@ app.use("/api", require("./routes/facultiesRoutes"));
 // project registration routes
 app.use("/api", require("./routes/registrationRoutes"));
 
+// Public API routes (no authentication required)
+app.use("/api", require("./routes/accelerationStatusRoutes"));
+app.use("/api", require("./routes/faqRoutes"));
+app.use("/api", require("./routes/locationsRoutes"));
+app.use("/api", require("./routes/preIncubationStatusRoutes"));
+app.use("/api", require("./routes/partnersRoutes"));
+
 const verifyJWT = require("./middlewares/verifyJWT");
 
 app.use("/api/users", verifyJWT, require("./routes/usersRoutes"));
 
 app.use("/api/ai", require("./routes/aiRoutes"));
+
+// Jury management routes (authenticated, SuperAdmin/Admin access)
+app.use("/api/juries", require("./routes/juryRoutes"));
+app.use("/api/jury-members", require("./routes/juryMembreRoutes"));
+app.use("/api/jury-member-roles", require("./routes/juryMembreRoleRoutes"));
+
+// Projects routes (authenticated, SuperAdmin/Admin/Coach/Supervisor access)
+app.use("/api/projects", require("./routes/projectsRoutes"));
 
 // Error handling
 const errorHandler = require("./middlewares/errorHandler");

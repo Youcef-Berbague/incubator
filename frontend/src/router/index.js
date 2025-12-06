@@ -9,6 +9,13 @@ import RegistrationsManagement from "../components/dashboards/RegistrationsManag
 import UsersManagement from "../components/dashboards/UsersManagement.vue";
 import FacultiesManagement from "../components/dashboards/FacultiesManagement.vue";
 import MyAccountSettings from "../components/dashboards/MyAccountSettings.vue";
+import FAQManagement from "../components/dashboards/FAQManagement.vue";
+import AccelerationStatusManagement from "../components/dashboards/AccelerationStatusManagement.vue";
+import LocationsManagement from "../components/dashboards/LocationsManagement.vue";
+import PartnersManagement from "../components/dashboards/PartnersManagement.vue";
+import PreIncubationStatusManagement from "../components/dashboards/PreIncubationStatusManagement.vue";
+import JuryMemberRolesManagement from "../components/dashboards/JuryMemberRolesManagement.vue";
+import JuriesManagement from "../components/dashboards/JuriesManagement.vue";
 
 const routes = [
   {
@@ -61,6 +68,48 @@ const routes = [
     name: "MyAccountSettings",
     component: MyAccountSettings,
     meta: { requiresAuth: true },
+  },
+  {
+    path: "/dashboard/faqs",
+    name: "FAQManagement",
+    component: FAQManagement,
+    meta: { requiresAuth: true, requiresSuperAdmin: true },
+  },
+  {
+    path: "/dashboard/acceleration-statuses",
+    name: "AccelerationStatusManagement",
+    component: AccelerationStatusManagement,
+    meta: { requiresAuth: true, requiresSuperAdmin: true },
+  },
+  {
+    path: "/dashboard/locations",
+    name: "LocationsManagement",
+    component: LocationsManagement,
+    meta: { requiresAuth: true, requiresSuperAdmin: true },
+  },
+  {
+    path: "/dashboard/partners",
+    name: "PartnersManagement",
+    component: PartnersManagement,
+    meta: { requiresAuth: true, requiresSuperAdmin: true },
+  },
+  {
+    path: "/dashboard/pre-incubation-statuses",
+    name: "PreIncubationStatusManagement",
+    component: PreIncubationStatusManagement,
+    meta: { requiresAuth: true, requiresSuperAdmin: true },
+  },
+  {
+    path: "/dashboard/jury-member-roles",
+    name: "JuryMemberRolesManagement",
+    component: JuryMemberRolesManagement,
+    meta: { requiresAuth: true, requiresSuperAdmin: true },
+  },
+  {
+    path: "/dashboard/juries",
+    name: "JuriesManagement",
+    component: JuriesManagement,
+    meta: { requiresAuth: true, requiresSuperAdmin: true },
   },
 ];
 

@@ -24,8 +24,6 @@ const handleRefreshToken = async (req, res) => {
 
     const oldRefreshToken = cookies.jwt;
 
-    clearCookie(res);
-
     // فك التوكن لمعرفة الـ id (الـ uuid المحفوظ داخل الـ payload)
     let decoded;
     try {
@@ -74,6 +72,8 @@ const handleRefreshToken = async (req, res) => {
         if (err || user.id !== decodedPayload.userInfos.userId) {
           return res.sendStatus(403);
         }
+
+        clearCookie(res);
 
         const fingerprint = getFingerPrint(req);
 
