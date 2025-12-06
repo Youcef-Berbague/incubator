@@ -21,6 +21,15 @@ const getAll = async (req, res) => {
 
     const allUsers = await getAllUsers();
 
+    // For SuperAdmin, show all users regardless of role
+    if (requesterRoles.includes(ROLES.superAdmin)) {
+      return res.json({
+        success: true,
+        data: allUsers,
+        total: allUsers.length,
+      });
+    }
+
     // Filter users: only show users with roles lower than requester's max role
     const filteredUsers = allUsers.filter((user) => {
       const userRoles = Array.isArray(user.role)
@@ -137,11 +146,9 @@ const updateuser = async (req, res) => {
 
     // Users can only update their own account, unless they're admin
     if (!isAdmin && requesterId !== parseInt(id)) {
-      return res
-        .status(403)
-        .json({
-          message: "Access denied. You can only update your own account.",
-        });
+      return res.status(403).json({
+        message: "Access denied. You can only update your own account.",
+      });
     }
 
     // Build update data - basic fields available to all users
@@ -171,12 +178,10 @@ const updateuser = async (req, res) => {
         p_team_id !== undefined ||
         departement_id !== undefined
       ) {
-        return res
-          .status(403)
-          .json({
-            message:
-              "You don't have permission to modify role, status, team, or department.",
-          });
+        return res.status(403).json({
+          message:
+            "You don't have permission to modify role, status, team, or department.",
+        });
       }
     }
 

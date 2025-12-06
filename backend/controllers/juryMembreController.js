@@ -91,7 +91,7 @@ const handleCreateJuryMembre = async (req, res) => {
     }
 
     // Verify user has eligible role (supervisor, admin, coach, super admin)
-    const prisma = require("../config/db");
+    const {prisma} = require("../config/db");
     const user = await prisma.users.findUnique({
       where: { id: parseInt(membre_id) },
       select: { role: true, first_name: true, last_name: true },
@@ -103,8 +103,8 @@ const handleCreateJuryMembre = async (req, res) => {
         message: "User not found",
       });
     }
-
-    const eligibleRoles = [101, 555, 333, 777]; // supervisor, admin, coach, super admin
+    const roles = require("../config/rolesList")
+    const eligibleRoles = [roles.supervisor, roles.admin, roles.coach, roles.superAdmin]; // supervisor, admin, coach, super admin
     const hasEligibleRole = user.role.some((role) =>
       eligibleRoles.includes(role)
     );
@@ -113,7 +113,7 @@ const handleCreateJuryMembre = async (req, res) => {
       return res.status(403).json({
         success: false,
         message:
-          "User must have supervisor, admin, coach, or super admin role to be a jury member",
+          "an error occured",
       });
     }
 
@@ -173,7 +173,7 @@ const handleUpdateJuryMembre = async (req, res) => {
 
     // If changing user, check if new user is eligible
     if (parseInt(membre_id) !== existingMember.membre_id) {
-      const prisma = require("../config/db");
+      const {prisma} = require("../config/db");
       const user = await prisma.users.findUnique({
         where: { id: parseInt(membre_id) },
         select: { role: true },

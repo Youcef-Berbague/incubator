@@ -74,7 +74,9 @@
         <div class="jury-details">
           <div class="detail-row" v-if="jury.faculties">
             <span class="detail-label">🎓 Faculty:</span>
-            <span class="detail-value">{{ jury.faculties.faculty_name_en }}</span>
+            <span class="detail-value">{{
+              jury.faculties.faculty_name_en
+            }}</span>
           </div>
           <div class="detail-row" v-if="jury.locations">
             <span class="detail-label">📍 Location:</span>
@@ -247,7 +249,11 @@
     </div>
 
     <!-- Members Management Modal -->
-    <div v-if="showMembersModal" class="modal-overlay" @click="closeMembersModal">
+    <div
+      v-if="showMembersModal"
+      class="modal-overlay"
+      @click="closeMembersModal"
+    >
       <div class="modal-content modal-large" @click.stop>
         <div class="modal-header">
           <h2>Manage Jury Members - {{ selectedJury?.jury_code }}</h2>
@@ -255,50 +261,123 @@
         </div>
 
         <div class="modal-body">
+          <!-- Member Limit Warning -->
+          <div v-if="getCurrentMembersCount() >= 5" class="warning-banner">
+            <span class="warning-icon">⚠️</span>
+            <span
+              >Maximum jury members reached (5/5). The socio-economic partner is
+              separate. Remove a member to add a new one.</span
+            >
+          </div>
+
           <!-- Assign New Member Section -->
-          <div class="assign-section">
-            <h3>Assign New Member</h3>
-            <div class="assign-form">
-              <div class="form-group">
-                <label>Select Jury Member</label>
-                <select v-model="selectedMemberId" class="form-input">
-                  <option :value="null">-- Select Member --</option>
-                  <option
-                    v-for="membre in availableJuryMembers"
-                    :key="membre.id"
-                    :value="membre.id"
+          <div class="assign-section" v-if="getCurrentMembersCount() < 5">
+            <h3>
+              Assign New Member ({{ getCurrentMembersCount() }}/5 members) -
+              Partner is separate
+            </h3>
+
+            <!-- Advanced User Search -->
+            <div class="advanced-search">
+              <div class="search-filters-grid">
+                <div class="form-group">
+                  <label>Search by Name/Email</label>
+                  <input
+                    v-model="userSearchFilters.search"
+                    type="text"
+                    class="form-input"
+                    placeholder="Type to search users..."
+                    @input="handleUserSearch"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Filter by Department</label>
+                  <select
+                    v-model="userSearchFilters.departmentFilter"
+                    class="form-input"
+                    @change="handleUserSearch"
                   >
-                    {{ getUserNameFromMembre(membre) }} -
-                    {{ membre.jury_membre_role?.name || "No Role" }}
+                    <option :value="null">All Departments</option>
+                    <option
+                      v-for="dept in departments"
+                      :key="dept.id"
+                      :value="dept.id"
+                    >
+                      {{ dept.departement_name }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div
+                class="search-results-info"
+                v-if="filteredUsersForSearch.length > 0"
+              >
+                Found {{ filteredUsersForSearch.length }} user(s)
+              </div>
+            </div>
+
+            <!-- User Selection & Role Assignment -->
+            <div class="assign-form-grid">
+              <div class="form-group">
+                <label>Select User <span class="required">*</span></label>
+                <select
+                  v-model="newMemberForm.userId"
+                  class="form-input"
+                  @change="onUserSelected"
+                >
+                  <option :value="null">-- Select User --</option>
+                  <option
+                    v-for="user in filteredUsersForSearch"
+                    :key="user.id"
+                    :value="user.id"
+                  >
+                    {{ user.first_name }} {{ user.last_name }} -
+                    {{ user.email }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Jury Member Role <span class="required">*</span></label>
+                <select v-model="newMemberForm.roleId" class="form-input">
+                  <option :value="null">-- Select Role --</option>
+                  <option
+                    v-for="role in availableJuryMemberRoles"
+                    :key="role.id"
+                    :value="role.id"
+                    :disabled="isRoleAlreadyAssigned(role.id)"
+                  >
+                    {{ role.name }}
+                    {{
+                      isRoleAlreadyAssigned(role.id) ? "(Already Assigned)" : ""
+                    }}
                   </option>
                 </select>
               </div>
               <button
                 class="btn-assign"
                 @click="assignMemberToJury"
-                :disabled="!selectedMemberId || assigningMember"
+                :disabled="
+                  !newMemberForm.userId ||
+                  !newMemberForm.roleId ||
+                  assigningMember
+                "
               >
-                {{ assigningMember ? "Assigning..." : "➕ Assign Member" }}
+                {{ assigningMember ? "Assigning..." : "➕ Add Member" }}
               </button>
             </div>
+            <p class="help-text">
+              💡 The jury can have maximum 5 members. The socio-economic partner
+              is assigned separately and is not counted here. Each member must
+              have a different role. Use search filters to find users quickly.
+            </p>
           </div>
 
           <!-- Current Members List -->
           <div class="members-list-section">
-            <h3>
-              Current Members ({{
-                selectedJury?.jury_membres_relation?.length || 0
-              }})
-            </h3>
-            <div
-              v-if="
-                selectedJury?.jury_membres_relation &&
-                selectedJury.jury_membres_relation.length > 0
-              "
-              class="members-table"
-            >
+            <h3>Current Members ({{ getCurrentMembersCount() }}/5)</h3>
+            <div v-if="getCurrentMembersCount() > 0" class="members-table">
               <div
-                v-for="relation in selectedJury.jury_membres_relation"
+                v-for="relation in selectedJury?.jury_membres_relation"
                 :key="relation.jury_membre.id"
                 class="member-row"
               >
@@ -317,7 +396,9 @@
                       {{ relation.jury_membre.users?.last_name }}
                     </p>
                     <p class="member-role">
-                      {{ relation.jury_membre.jury_membre_role?.name || "No Role" }}
+                      <span class="role-badge">{{
+                        relation.jury_membre.jury_membre_role?.name || "No Role"
+                      }}</span>
                     </p>
                     <p class="member-email">
                       {{ relation.jury_membre.users?.email }}
@@ -326,7 +407,7 @@
                 </div>
                 <button
                   class="btn-remove"
-                  @click="removeMemberFromJury(relation.jury_membre.id)"
+                  @click="confirmRemoveMember(relation.jury_membre.id)"
                   :disabled="removingMember"
                 >
                   🗑️ Remove
@@ -334,7 +415,11 @@
               </div>
             </div>
             <div v-else class="empty-members">
-              <p>No members assigned yet. Assign members using the form above.</p>
+              <div class="empty-icon">👥</div>
+              <p>No members assigned yet.</p>
+              <p class="empty-subtitle">
+                Add up to 5 members with different roles to this jury.
+              </p>
             </div>
           </div>
         </div>
@@ -345,8 +430,51 @@
       </div>
     </div>
 
+    <!-- Remove Member Confirmation Modal -->
+    <div
+      v-if="showRemoveMemberModal"
+      class="modal-overlay"
+      @click="showRemoveMemberModal = false"
+    >
+      <div class="modal-content modal-small" @click.stop>
+        <div class="modal-header">
+          <h2>Confirm Remove Member</h2>
+          <button class="close-btn" @click="showRemoveMemberModal = false">
+            ✕
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="delete-warning">
+            <span class="warning-icon">⚠️</span>
+            <p>Are you sure you want to remove this member from the jury?</p>
+            <p class="warning-text">
+              This action will unassign the member from this jury session.
+            </p>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="showRemoveMemberModal = false">
+            Cancel
+          </button>
+          <button
+            class="btn-delete-confirm"
+            @click="removeMemberFromJury"
+            :disabled="removingMember"
+          >
+            {{ removingMember ? "Removing..." : "Remove Member" }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Projects Assignment Modal -->
-    <div v-if="showProjectsModal" class="modal-overlay" @click="closeProjectsModal">
+    <div
+      v-if="showProjectsModal"
+      class="modal-overlay"
+      @click="closeProjectsModal"
+    >
       <div class="modal-content modal-large" @click.stop>
         <div class="modal-header">
           <h2>Assign Projects - {{ selectedJury?.jury_code }}</h2>
@@ -448,7 +576,8 @@
             <span class="warning-icon">⚠️</span>
             <p>
               Are you sure you want to delete jury
-              <strong>{{ juryToDelete?.jury_code }}</strong>?
+              <strong>{{ juryToDelete?.jury_code }}</strong
+              >?
             </p>
             <p class="warning-text">
               This will also remove all member assignments and project
@@ -461,7 +590,11 @@
           <button class="btn-cancel" @click="showDeleteModal = false">
             Cancel
           </button>
-          <button class="btn-delete-confirm" @click="handleDelete" :disabled="deleting">
+          <button
+            class="btn-delete-confirm"
+            @click="handleDelete"
+            :disabled="deleting"
+          >
             {{ deleting ? "Deleting..." : "Delete Jury" }}
           </button>
         </div>
@@ -477,6 +610,16 @@ import api from "../../api.js";
 
 const router = useRouter();
 
+// Role constants (matching backend rolesList.js)
+const ROLES = Object.freeze({
+  superAdmin: 100,
+  admin: 90,
+  coach: 70,
+  supervisor: 60,
+  student: 40,
+  guest: 10,
+});
+
 // State
 const juries = ref([]);
 const faculties = ref([]);
@@ -484,23 +627,34 @@ const locations = ref([]);
 const partners = ref([]);
 const juryMembers = ref([]);
 const projects = ref([]);
+const allUsers = ref([]);
+const departments = ref([]);
 
 const loading = ref(false);
 const error = ref("");
 const successMessage = ref("");
 const searchQuery = ref("");
 
+// User search filters
+const userSearchFilters = ref({
+  search: "",
+  roleFilter: null,
+  departmentFilter: null,
+});
+
 // Modal states
 const showModal = ref(false);
 const showMembersModal = ref(false);
 const showProjectsModal = ref(false);
 const showDeleteModal = ref(false);
+const showRemoveMemberModal = ref(false);
 const isEditMode = ref(false);
 const saving = ref(false);
 const deleting = ref(false);
 const assigningMember = ref(false);
 const removingMember = ref(false);
 const assigningProjects = ref(false);
+const juryMemberRoles = ref(null);
 
 // Form data
 const formData = ref({
@@ -511,10 +665,15 @@ const formData = ref({
   so_partener_id: null,
 });
 
+const newMemberForm = ref({
+  userId: null,
+  roleId: null,
+});
+
 const validationErrors = ref({});
 const selectedJury = ref(null);
 const juryToDelete = ref(null);
-const selectedMemberId = ref(null);
+const memberToRemove = ref(null);
 const selectedProjectIds = ref([]);
 
 // Computed
@@ -529,15 +688,50 @@ const filteredJuries = computed(() => {
   });
 });
 
-const availableJuryMembers = computed(() => {
-  if (!selectedJury.value) return juryMembers.value;
+const filteredUsersForSearch = computed(() => {
+  // ✅ Safety check: ensure users is always an array
+  let users = Array.isArray(allUsers.value) ? allUsers.value : [];
 
-  const assignedMemberIds =
-    selectedJury.value.jury_membres_relation?.map((rel) => rel.jury_membre.id) ||
-    [];
-  return juryMembers.value.filter(
-    (membre) => !assignedMemberIds.includes(membre.id)
-  );
+  // Filter out users already assigned to this jury
+  if (selectedJury.value) {
+    const assignedUserIds =
+      selectedJury.value.jury_membres_relation?.map(
+        (rel) => rel.jury_membre.users?.id
+      ) || [];
+    users = users.filter((user) => !assignedUserIds.includes(user.id));
+  }
+
+  // Apply search filter
+  if (userSearchFilters.value.search) {
+    const searchTerm = userSearchFilters.value.search.toLowerCase();
+    users = users.filter((user) => {
+      const nameMatch = `${user.first_name} ${user.last_name}`
+        .toLowerCase()
+        .includes(searchTerm);
+      const emailMatch = user.email?.toLowerCase().includes(searchTerm);
+      return nameMatch || emailMatch;
+    });
+  }
+
+  // Apply role filter
+  if (userSearchFilters.value.roleFilter) {
+    users = users.filter((user) =>
+      user.role?.includes(userSearchFilters.value.roleFilter)
+    );
+  }
+
+  // Apply department filter
+  if (userSearchFilters.value.departmentFilter) {
+    users = users.filter(
+      (user) => user.departement_id === userSearchFilters.value.departmentFilter
+    );
+  }
+
+  return users;
+});
+
+const availableJuryMemberRoles = computed(() => {
+  return juryMemberRoles.value;
 });
 
 const availableProjects = computed(() => {
@@ -556,7 +750,8 @@ const fetchJuries = async () => {
     }
   } catch (err) {
     error.value =
-      err.response?.data?.message || "Failed to fetch juries. Please try again.";
+      err.response?.data?.message ||
+      "Failed to fetch juries. Please try again.";
   } finally {
     loading.value = false;
   }
@@ -609,6 +804,68 @@ const fetchJuryMembers = async () => {
   }
 };
 
+const fetchAllUsers = async () => {
+  try {
+    const response = await api.get("/users/all");
+    console.log("Fetched users:", response.data);
+    if (response.data.success) {
+      // Filter out students and guests - only show eligible jury members
+      const eligibleRoles = [
+        ROLES.superAdmin,
+        ROLES.admin,
+        ROLES.coach,
+        ROLES.supervisor,
+      ];
+      const filteredUsers = response.data.data.filter((user) => {
+        if (!user.role || !Array.isArray(user.role)) return false;
+        // User must have at least one eligible role
+        return user.role.some((r) => eligibleRoles.includes(r));
+      });
+      allUsers.value = filteredUsers;
+    }
+  } catch (err) {
+    console.error("Failed to fetch all users:", err);
+    allUsers.value = []; // ✅ Ensure it's always an array
+  }
+};
+
+const fetchDepartments = async () => {
+  try {
+    const response = await api.get("/faculties");
+    if (Array.isArray(response.data)) {
+      // Extract departments from faculties
+      const depts = [];
+      response.data.forEach((faculty) => {
+        if (faculty.departements && Array.isArray(faculty.departements)) {
+          depts.push(...faculty.departements);
+        }
+      });
+      departments.value = depts;
+    } else if (response.data.success) {
+      const depts = [];
+      response.data.data.forEach((faculty) => {
+        if (faculty.departements && Array.isArray(faculty.departements)) {
+          depts.push(...faculty.departements);
+        }
+      });
+      departments.value = depts;
+    }
+  } catch (err) {
+    console.error("Failed to fetch departments:", err);
+  }
+};
+
+const fetchJuryMemberRoles = async () => {
+  try {
+    const response = await api.get("/jury-member-roles");
+    if (response.data.success) {
+      juryMemberRoles.value = response.data.data;
+    }
+  } catch (err) {
+    console.error("Failed to fetch jury member roles:", err);
+  }
+};
+
 const fetchProjects = async () => {
   try {
     // Try to fetch projects - if the endpoint doesn't exist yet, we'll handle it gracefully
@@ -658,7 +915,10 @@ const closeModal = () => {
 const validateForm = () => {
   validationErrors.value = {};
 
-  if (!formData.value.jury_code || formData.value.jury_code.trim().length === 0) {
+  if (
+    !formData.value.jury_code ||
+    formData.value.jury_code.trim().length === 0
+  ) {
     validationErrors.value.jury_code = "Jury code is required";
     return false;
   }
@@ -744,35 +1004,124 @@ const handleDelete = async () => {
   }
 };
 
-const openMembersModal = (jury) => {
+const openMembersModal = async (jury) => {
   selectedJury.value = jury;
-  selectedMemberId.value = null;
+  newMemberForm.value = {
+    userId: null,
+    roleId: null,
+  };
+  userSearchFilters.value = {
+    search: "",
+    roleFilter: null,
+    departmentFilter: null,
+  };
   showMembersModal.value = true;
+
+  // Fetch all users, jury member roles, and departments when modal opens
+  await Promise.all([
+    fetchAllUsers(),
+    fetchJuryMemberRoles(),
+    fetchDepartments(),
+  ]);
 };
 
 const closeMembersModal = () => {
   showMembersModal.value = false;
   selectedJury.value = null;
-  selectedMemberId.value = null;
+  newMemberForm.value = {
+    userId: null,
+    roleId: null,
+  };
+  userSearchFilters.value = {
+    search: "",
+    roleFilter: null,
+    departmentFilter: null,
+  };
+};
+
+const getCurrentMembersCount = () => {
+  if (!selectedJury.value) return 0;
+  return selectedJury.value.jury_membres_relation?.length || 0;
+};
+
+const isRoleAlreadyAssigned = (roleId) => {
+  if (!selectedJury.value) return false;
+
+  const assignedRoleIds =
+    selectedJury.value.jury_membres_relation?.map(
+      (rel) => rel.jury_membre.role_id
+    ) || [];
+
+  return assignedRoleIds.includes(roleId);
+};
+
+const onUserSelected = () => {
+  // Optional: You can add logic here if needed when user is selected
 };
 
 const assignMemberToJury = async () => {
-  if (!selectedMemberId.value) return;
+  if (!newMemberForm.value.userId || !newMemberForm.value.roleId) {
+    error.value = "Please select both user and role";
+    setTimeout(() => (error.value = ""), 3000);
+    return;
+  }
+
+  // Validate member count (max 5 members, partner is separate)
+  if (getCurrentMembersCount() >= 5) {
+    error.value = "Maximum of 5 jury members allowed (partner is separate)";
+    setTimeout(() => (error.value = ""), 3000);
+    return;
+  }
+
+  // Validate role not already assigned
+  if (isRoleAlreadyAssigned(newMemberForm.value.roleId)) {
+    error.value = "This role is already assigned to another member";
+    setTimeout(() => (error.value = ""), 3000);
+    return;
+  }
 
   assigningMember.value = true;
   error.value = "";
 
   try {
-    const response = await api.post(
-      `/juries/${selectedJury.value.id}/members/${selectedMemberId.value}`
+    // Step 1: Get the user from users table (already selected via newMemberForm.userId)
+
+    // Step 2: Assign jury member role to the user and save in jury_membre table
+    const createMemberResponse = await api.post("/jury-members", {
+      membre_id: newMemberForm.value.userId,
+      role_id: newMemberForm.value.roleId,
+    });
+
+    if (!createMemberResponse.data.success) {
+      throw new Error("Failed to create jury member");
+    }
+
+    const newJuryMembreId = createMemberResponse.data.data.id;
+
+    // Step 3: Make relation between jury_membre and jury (save in jury_membres_relation)
+    const assignResponse = await api.post(
+      `/juries/${selectedJury.value.id}/members/${newJuryMembreId}`
     );
-    if (response.data.success) {
+
+    if (assignResponse.data.success) {
       successMessage.value = "Member assigned successfully!";
       await fetchJuries();
+
       // Update selected jury
-      const updatedJury = juries.value.find((j) => j.id === selectedJury.value.id);
+      const updatedJury = juries.value.find(
+        (j) => j.id === selectedJury.value.id
+      );
       selectedJury.value = updatedJury;
-      selectedMemberId.value = null;
+
+      // Reset form
+      newMemberForm.value = {
+        userId: null,
+        roleId: null,
+      };
+
+      // Refresh all users list
+      await fetchAllUsers();
+
       setTimeout(() => (successMessage.value = ""), 3000);
     }
   } catch (err) {
@@ -783,20 +1132,37 @@ const assignMemberToJury = async () => {
   }
 };
 
-const removeMemberFromJury = async (memberId) => {
+const confirmRemoveMember = (memberId) => {
+  memberToRemove.value = memberId;
+  showRemoveMemberModal.value = true;
+};
+
+const removeMemberFromJury = async () => {
+  if (!memberToRemove.value) return;
+
   removingMember.value = true;
   error.value = "";
 
   try {
     const response = await api.delete(
-      `/juries/${selectedJury.value.id}/members/${memberId}`
+      `/juries/${selectedJury.value.id}/members/${memberToRemove.value}`
     );
     if (response.data.success) {
       successMessage.value = "Member removed successfully!";
       await fetchJuries();
+
       // Update selected jury
-      const updatedJury = juries.value.find((j) => j.id === selectedJury.value.id);
+      const updatedJury = juries.value.find(
+        (j) => j.id === selectedJury.value.id
+      );
       selectedJury.value = updatedJury;
+
+      showRemoveMemberModal.value = false;
+      memberToRemove.value = null;
+
+      // Refresh all users list
+      await fetchAllUsers();
+
       setTimeout(() => (successMessage.value = ""), 3000);
     }
   } catch (err) {
@@ -871,16 +1237,15 @@ const formatDateForInput = (dateString) => {
 };
 
 const getJuryMembersCount = (jury) => {
-  return jury.jury_membres_relation?.length || 0;
+  if (jury.socio_economic_partner) {
+    return jury.jury_membres_relation?.length + 1 || 0;
+  } else {
+    return jury.jury_membres_relation?.length || 0;
+  }
 };
 
 const getJuryProjectsCount = (jury) => {
   return jury.jury_project?.length || 0;
-};
-
-const getUserNameFromMembre = (membre) => {
-  if (!membre.users) return "Unknown";
-  return `${membre.users.first_name} ${membre.users.last_name}`;
 };
 
 const getInitials = (firstName, lastName) => {
@@ -924,7 +1289,8 @@ onMounted(async () => {
 
 <style scoped>
 .juries-management {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   padding: 30px;
   background: #f5f5f5;
   min-height: 100vh;
@@ -1491,6 +1857,48 @@ onMounted(async () => {
 }
 
 /* Members Modal */
+.warning-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-left: 4px solid #ff9800;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  color: #856404;
+}
+
+.warning-banner .warning-icon {
+  font-size: 24px;
+}
+
+.advanced-search {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 2px solid #e6edff;
+}
+
+.search-filters-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.search-results-info {
+  padding: 8px 12px;
+  background: #e6edff;
+  color: #0066ff;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
 .assign-section {
   margin-bottom: 30px;
   padding: 20px;
@@ -1503,6 +1911,32 @@ onMounted(async () => {
   font-weight: 700;
   color: #1a1a1a;
   margin-bottom: 16px;
+}
+
+.assign-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.assign-form-grid .form-group {
+  margin-bottom: 0;
+}
+
+.assign-form-grid .required {
+  color: #ff4444;
+  font-weight: 700;
+}
+
+.help-text {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #666;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border-left: 3px solid #0066ff;
 }
 
 .assign-form {
@@ -1527,15 +1961,18 @@ onMounted(async () => {
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
+  height: 42px;
 }
 
 .btn-assign:hover:not(:disabled) {
   background: #0052cc;
+  transform: translateY(-1px);
 }
 
 .btn-assign:disabled {
   background: #ccc;
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .members-list-section h3 {
@@ -1556,9 +1993,15 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background: #f8f9ff;
+  background: white;
   border-radius: 8px;
   border: 2px solid #e6edff;
+  transition: all 0.3s ease;
+}
+
+.member-row:hover {
+  border-color: #0066ff;
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.1);
 }
 
 .member-info {
@@ -1571,13 +2014,14 @@ onMounted(async () => {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #0066ff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 16px;
+  flex-shrink: 0;
 }
 
 .member-details {
@@ -1588,19 +2032,55 @@ onMounted(async () => {
   font-size: 14px;
   font-weight: 700;
   color: #1a1a1a;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .member-role {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #e6edff;
   color: #0066ff;
-  margin-bottom: 2px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 12px;
 }
 
 .member-email {
   font-size: 12px;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.member-user-role {
+  font-size: 12px;
   color: #666;
+  font-style: italic;
+}
+
+.empty-members {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.empty-members .empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.empty-members p {
+  margin: 8px 0;
+}
+
+.empty-members .empty-subtitle {
+  font-size: 13px;
+  color: #ccc;
 }
 
 .btn-remove {
