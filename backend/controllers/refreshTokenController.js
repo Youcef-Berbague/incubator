@@ -45,7 +45,7 @@ const handleRefreshToken = async (req, res) => {
             // حذف جميع التوكنات الخاصة بالمستخدم بسبب اكتشاف استخدام غير مصرح
             await deleteAllRefreshTokens(decoded.userInfos.userId);
           }
-        }
+        },
       );
       return res.sendStatus(403);
     }
@@ -66,7 +66,8 @@ const handleRefreshToken = async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET,
       async (err, decodedPayload) => {
         if (err) {
-          await deleteSingleRefreshToken(oldRefreshToken);
+          await deleteSingleRefreshToken(decoded?.id);
+          clearCookie(res);
         }
 
         if (err || user.id !== decodedPayload.userInfos.userId) {
@@ -83,14 +84,14 @@ const handleRefreshToken = async (req, res) => {
           rememberMe,
           fingerprint,
           req,
-          res
+          res,
         );
 
         return res.status(200).json({
           status: "success",
           message: "Refresh token refreshed successfully",
         });
-      }
+      },
     );
   } catch (error) {
     console.error("[handleRefreshToken]", error);

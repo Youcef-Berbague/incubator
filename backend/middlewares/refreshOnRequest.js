@@ -23,16 +23,16 @@ const getRealIp = require("../utils/getRealIP");
 // 🧠 refresh configs
 const ROTATE_THRESHOLD_MS = parseInt(
   process.env.ROTATE_THRESHOLD_MS || "86400000",
-  10
+  10,
 ); // 24h
 
 const ROTATE_AFTER_N_REQUESTS = parseInt(
   process.env.ROTATE_AFTER_N_REQUESTS || "50",
-  10
+  10,
 );
 
 const PROBABILISTIC_ROTATE_PERCENT = parseFloat(
-  process.env.PROB_ROTATE_PCT || "0.01"
+  process.env.PROB_ROTATE_PCT || "0",
 );
 
 const getRefreshTokenTimeLeft = (token) => {
@@ -48,6 +48,8 @@ const getRefreshTokenTimeLeft = (token) => {
 const refreshOnRequest = (options = {}) => {
   return async (req, res, next) => {
     try {
+      if (req.path?.startsWith("/api/auth/")) return next();
+
       const cookies = req.cookies;
       if (!cookies?.jwt) return next();
       const oldRefreshToken = cookies.jwt;
@@ -66,7 +68,7 @@ const refreshOnRequest = (options = {}) => {
             req.originalUrl || req.url
           }\n`,
           ip,
-          ua
+          ua,
         );
         clearCookie(res);
         return next();
@@ -76,12 +78,11 @@ const refreshOnRequest = (options = {}) => {
       // 🧩 المرحلة 2: التحقق من وجود سجل في قاعدة البيانات
       const tokenRecord = await findUserByRefreshTokenId(decoded.id);
       if (!tokenRecord) {
-        await sendTelegramAlert(
-          `🟠 Refresh Token لا يتطابق مع أي سجل\nuuid: ${decoded.id}\n`,
-          ip,
-          ua
+        // Likely concurrent request during token rotation; do not clear cookie here.
+        console.warn(
+          "[refreshOnRequest] refresh token id not found (possible concurrent rotation):",
+          decoded.id,
         );
-        clearCookie(res);
         return next();
       }
 
@@ -90,7 +91,7 @@ const refreshOnRequest = (options = {}) => {
       const { similarity } = getFingerprintSimilarity(
         currentFp,
         tokenRecord.fingerprint,
-        {}
+        {},
       );
 
       if (similarity < 80) {
@@ -98,12 +99,12 @@ const refreshOnRequest = (options = {}) => {
           `🚨 محاولة استخدام Refresh Token من جهاز مختلف!\nuserId: ${
             tokenRecord.user_id
           }\nsimilarity: ${similarity}%\n\nStoredFingerprint:\n\n ${JSON.stringify(
-            tokenRecord.fingerprint || {}
+            tokenRecord.fingerprint || {},
           )}\n\n CurrentFingerprint:\n\n ${JSON.stringify(
-            currentFp || {}
+            currentFp || {},
           )} \n\n`,
           ip,
-          ua
+          ua,
         );
         await deleteSingleRefreshToken(tokenRecord.uuid);
         clearCookie(res);
@@ -119,7 +120,7 @@ const refreshOnRequest = (options = {}) => {
         await sendTelegramAlert(
           `🔴 Refresh Token غير صالح (توقيع مزيف)\nuserId: ${tokenRecord.user_id}\nreason: ${err.message}\n`,
           ip,
-          ua
+          ua,
         );
         clearCookie(res);
         return next();
@@ -131,14 +132,14 @@ const refreshOnRequest = (options = {}) => {
         tokenRecord.users.id !== payload.userInfos.userId
       ) {
         await deleteAllRefreshTokens(
-          payload.userInfos?.userId || tokenRecord.user_id
+          payload.userInfos?.userId || tokenRecord.user_id,
         );
         await sendTelegramAlert(
           `⚠️ محاولة انتحال هوية (User Mismatch)\ntokenUser: ${
             payload.userInfos?.userId || "N/A"
           }\ndbUser: ${tokenRecord.user_id}\n`,
           ip,
-          ua
+          ua,
         );
         clearCookie(res);
         return next();
@@ -151,7 +152,7 @@ const refreshOnRequest = (options = {}) => {
         await sendTelegramAlert(
           `🔴 محاولة استخدام Refresh Token غير مطابق (هاش مزور)\nuserId: ${tokenRecord.user_id}\n`,
           ip,
-          ua
+          ua,
         );
         clearCookie(res);
         return next();
@@ -159,7 +160,8 @@ const refreshOnRequest = (options = {}) => {
 
       // 🧩 المرحلة 7: احتساب الوقت المتبقي ودورات التحديث
       const timeLeftMs = getRefreshTokenTimeLeft(oldRefreshToken);
-      const shouldRotateByTTL = timeLeftMs && timeLeftMs < ROTATE_THRESHOLD_MS;
+      const shouldRotateByTTL =
+        timeLeftMs !== null && timeLeftMs < ROTATE_THRESHOLD_MS;
       const shouldRotateByRequests =
         tokenRecord.request_count >= ROTATE_AFTER_N_REQUESTS;
       const shouldRotateByProb = Math.random() < PROBABILISTIC_ROTATE_PERCENT;
@@ -171,24 +173,23 @@ const refreshOnRequest = (options = {}) => {
       if (shouldRotateByTTL || shouldRotateByRequests || shouldRotateByProb) {
         const fingerprint = currentFp || tokenRecord.fingerprint;
         try {
-
           await generateCookieAndSaveRefreshToken(
             tokenRecord.users,
             !!tokenRecord.remembreme,
             fingerprint,
             req,
-            res
+            res,
           );
 
           await deleteSingleRefreshToken(tokenRecord.uuid);
 
           console.log(
             "[refreshOnRequest] Token rotated successfully for user:",
-            tokenRecord.user_id
+            tokenRecord.user_id,
           );
         } catch (e) {
           console.error("[refreshOnRequest] rotation failed", e);
-          clearCookie(res);
+          // Keep existing cookie if rotation fails to avoid forced logout.
         }
       }
 
