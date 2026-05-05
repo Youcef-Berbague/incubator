@@ -156,6 +156,14 @@ const manageJuries = () => {
   router.push("/dashboard/juries");
 };
 
+const manageProjects = () => {
+  router.push("/dashboard/projects");
+};
+
+const manageSystemConfig = () => {
+  router.push("/dashboard/system-config");
+};
+
 const manageAccount = () => {
   router.push("/dashboard/account");
 };
@@ -274,6 +282,14 @@ const formatDate = (dateString) => {
             </div>
           </button>
 
+          <button class="sidebar-item" @click="manageProjects">
+            <div class="sidebar-icon">🚀</div>
+            <div class="sidebar-content">
+              <h4>Projects</h4>
+              <p>Manage incubator projects</p>
+            </div>
+          </button>
+
           <button class="sidebar-item" @click="manageJuries">
             <div class="sidebar-icon">⚖️</div>
             <div class="sidebar-content">
@@ -338,6 +354,14 @@ const formatDate = (dateString) => {
             <div class="sidebar-content">
               <h4>Jury Roles</h4>
               <p>Member roles</p>
+            </div>
+          </button>
+
+          <button class="sidebar-item" @click="manageSystemConfig">
+            <div class="sidebar-icon">🛡️</div>
+            <div class="sidebar-content">
+              <h4>System Config</h4>
+              <p>Security, limits, feature flags</p>
             </div>
           </button>
 

@@ -17,6 +17,8 @@ import PartnersManagement from "../components/dashboards/super-admin/management/
 import PreIncubationStatusManagement from "../components/dashboards/super-admin/management/PreIncubationStatusManagement.vue";
 import JuryMemberRolesManagement from "../components/dashboards/super-admin/management/JuryMemberRolesManagement.vue";
 import JuriesManagement from "../components/dashboards/super-admin/management/JuriesManagement.vue";
+import ProjectsManagement from "../components/dashboards/super-admin/management/ProjectsManagement.vue";
+import SystemConfigurationManagement from "../components/dashboards/super-admin/management/SystemConfigurationManagement.vue";
 
 const routes = [
   {
@@ -110,6 +112,18 @@ const routes = [
     path: "/dashboard/juries",
     name: "JuriesManagement",
     component: JuriesManagement,
+    meta: { requiresAuth: true, requiresSuperAdmin: true },
+  },
+  {
+    path: "/dashboard/projects",
+    name: "ProjectsManagement",
+    component: ProjectsManagement,
+    meta: { requiresAuth: true, requiresSuperAdmin: true },
+  },
+  {
+    path: "/dashboard/system-config",
+    name: "SystemConfigurationManagement",
+    component: SystemConfigurationManagement,
     meta: { requiresAuth: true, requiresSuperAdmin: true },
   },
 ];
