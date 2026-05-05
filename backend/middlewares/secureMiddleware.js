@@ -127,9 +127,16 @@ const handleSuspiciousActivity = async (ip, userAgent) => {
 
 const secureMiddleware = async (req, res, next) => {
   const url = req.url.toLowerCase();
+  const pathname = (req.path || "").toLowerCase();
   const base = path.basename(url);
   const ip = getRealIP(req);
   const userAgent = req.headers["user-agent"] || "unknown";
+
+  // Allow application API routes. Authorization and validation are handled
+  // by dedicated middleware/controllers.
+  if (pathname.startsWith("/api/")) {
+    return next();
+  }
 
   const hasForbiddenExt = forbiddenExt.some((ext) => url.endsWith(ext));
   const isBlockedByName = blockedFiles.some((file) => url.includes(file));

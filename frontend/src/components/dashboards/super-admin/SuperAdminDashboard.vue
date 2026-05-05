@@ -73,10 +73,7 @@ const fetchDashboardData = async (retryCount = 0) => {
 
     // If it's a 401/403 error and this is the first attempt, retry once after a short delay
     // This handles the case where cookies aren't set immediately after login
-    if (
-      (err.response?.status === 401 || err.response?.status === 403) &&
-      retryCount === 0
-    ) {
+    if (err.response?.status === 401 && retryCount === 0) {
       console.log("[Dashboard] Retrying after authentication delay...");
       setTimeout(() => {
         fetchDashboardData(1); // Retry once
