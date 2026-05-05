@@ -30,12 +30,12 @@ const limiter = rateLimit({
     sendTelegramAlert(
       `⚠️ DDoS Warning: Too many requests\nURL: ${req.url}\nMethod: ${req.method}`,
       ip,
-      userAgent
+      userAgent,
     );
 
     console.warn(`Rate limit exceeded: ${ip} | URL: ${req.url}`);
     res.status(options.statusCode).json(options.message);
-  }
+  },
 });
 
 /**
@@ -45,7 +45,8 @@ const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: {
-    error: "Too many login attempts, account temporarily locked. Please try again later."
+    error:
+      "Too many login attempts, account temporarily locked. Please try again later.",
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -60,14 +61,16 @@ const loginLimiter = rateLimit({
 
     // 📢 تنبيه خاص بتسجيل الدخول
     sendTelegramAlert(
-      `🔐 Login Attempt Limit Exceeded\nEmail: ${email || 'N/A'}\nIP: ${ip}`,
+      `🔐 Login Attempt Limit Exceeded\nEmail: ${email || "N/A"}\nIP: ${ip}`,
       ip,
-      userAgent
+      userAgent,
     );
 
-    console.warn(`Login rate limit hit: IP=${ip}, Email=${email} | URL: ${req.url}`);
+    console.warn(
+      `Login rate limit hit: IP=${ip}, Email=${email} | URL: ${req.url}`,
+    );
     res.status(429).json(options.message);
-  }
+  },
 });
 
 /**
@@ -77,7 +80,7 @@ const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,
   message: {
-    error: "Too many registration attempts. Please try again later."
+    error: "Too many registration attempts. Please try again later.",
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -92,12 +95,12 @@ const registerLimiter = rateLimit({
     sendTelegramAlert(
       `📝 Registration Flood Detected\nToo many sign-up attempts from one IP`,
       ip,
-      userAgent
+      userAgent,
     );
 
     console.warn(`Register rate limit hit: IP=${ip} | URL: ${req.url}`);
     res.status(429).json(options.message);
-  }
+  },
 });
 
 /**
@@ -107,30 +110,31 @@ const refreshTokenLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, // ⏱️ 10 دقائق
   max: 20, // ⛔ أقصى عدد محاولات تحديث
   message: {
-    error: "Too many refresh attempts. Please wait a few minutes before retrying."
+    error:
+      "Too many refresh attempts. Please wait a few minutes before retrying.",
   },
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => {
     // ✅ نربط المحاولات إما بـ refresh token ID أو الـ IP
-    const token = req.cookies?.refreshToken || req.body?.refreshToken;
+    const token = req.cookies?.jwt || req.body?.jwt;
     return token ? `refresh_${token.slice(0, 20)}` : getRealIP(req);
   },
   handler: (req, res, next, options) => {
     const ip = getRealIP(req);
     const userAgent = req.headers["user-agent"] || "unknown";
-    const token = req.cookies?.refreshToken || req.body?.refreshToken;
+    const token = req.cookies?.jwt || req.body?.jwt;
 
     // 📢 تنبيه خاص بمحاولات refresh الزائدة
     sendTelegramAlert(
-      `♻️ Refresh Token Limit Reached\nToken: ${token ? token.slice(0, 30) + '...' : 'N/A'}\nIP: ${ip}`,
+      `♻️ Refresh Token Limit Reached\nToken: ${token ? token.slice(0, 30) + "..." : "N/A"}\nIP: ${ip}`,
       ip,
-      userAgent
+      userAgent,
     );
 
     console.warn(`Refresh token rate limit hit: IP=${ip} | URL=${req.url}`);
     res.status(429).json(options.message);
-  }
+  },
 });
 
 module.exports = {

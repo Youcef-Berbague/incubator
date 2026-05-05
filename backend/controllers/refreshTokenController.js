@@ -29,70 +29,59 @@ const handleRefreshToken = async (req, res) => {
     try {
       decoded = jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET);
     } catch (err) {
+      clearCookie(res);
       return res.sendStatus(403);
     }
 
     const tokenRecord = await findUserByRefreshTokenId(decoded.id);
 
-    // detected refresh token reuse !!!!!!
+    // Token can be absent during concurrent rotation; do not revoke all sessions here.
     if (!tokenRecord) {
-      jwt.verify(
-        oldRefreshToken,
-        process.env.REFRESH_TOKEN_SECRET,
-        async (err, decoded) => {
-          if (err) return res.sendStatus(403);
-          else {
-            // حذف جميع التوكنات الخاصة بالمستخدم بسبب اكتشاف استخدام غير مصرح
-            await deleteAllRefreshTokens(decoded.userInfos.userId);
-          }
-        },
+      console.warn(
+        "[handleRefreshToken] token id not found (possible concurrent rotation):",
+        decoded.id,
       );
-      return res.sendStatus(403);
+      return res.status(409).json({
+        status: "error",
+        code: "REFRESH_TOKEN_RACE",
+        message: "Refresh token rotation in progress. Retry request.",
+      });
     }
 
     // التحقق من تطابق الـ JWT الأصلي مع الـ hash الموجود في قاعدة البيانات
     const isMatch = await bcrypt.compare(oldRefreshToken, tokenRecord.token);
     if (!isMatch) {
       await deleteAllRefreshTokens(tokenRecord.user_id);
+      clearCookie(res);
       return res.sendStatus(403);
     }
 
     const user = tokenRecord.users;
     const rememberMe = tokenRecord.remembreme;
 
-    // Check the token validity
-    jwt.verify(
-      oldRefreshToken,
-      process.env.REFRESH_TOKEN_SECRET,
-      async (err, decodedPayload) => {
-        if (err) {
-          await deleteSingleRefreshToken(decoded?.id);
-          clearCookie(res);
-        }
+    if (!user || user.id !== decoded.userInfos?.userId) {
+      await deleteSingleRefreshToken(decoded.id);
+      clearCookie(res);
+      return res.sendStatus(403);
+    }
 
-        if (err || user.id !== decodedPayload.userInfos.userId) {
-          return res.sendStatus(403);
-        }
+    clearCookie(res);
 
-        clearCookie(res);
+    const fingerprint = getFingerPrint(req);
 
-        const fingerprint = getFingerPrint(req);
-
-        await deleteSingleRefreshToken(decoded.id);
-        await generateCookieAndSaveRefreshToken(
-          user,
-          rememberMe,
-          fingerprint,
-          req,
-          res,
-        );
-
-        return res.status(200).json({
-          status: "success",
-          message: "Refresh token refreshed successfully",
-        });
-      },
+    await deleteSingleRefreshToken(decoded.id);
+    await generateCookieAndSaveRefreshToken(
+      user,
+      rememberMe,
+      fingerprint,
+      req,
+      res,
     );
+
+    return res.status(200).json({
+      status: "success",
+      message: "Refresh token refreshed successfully",
+    });
   } catch (error) {
     console.error("[handleRefreshToken]", error);
     return res.sendStatus(500);

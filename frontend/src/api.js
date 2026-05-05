@@ -55,8 +55,10 @@ api.interceptors.response.use(
     ) {
       const authStore = useAuthStore();
       if (originalRequest.url?.includes("/auth/refresh")) {
-        authStore.user = null;
-        authStore.isInitialized = true;
+        if (status === 401 || status === 403) {
+          authStore.user = null;
+          authStore.isInitialized = true;
+        }
       }
       return Promise.reject(error);
     }
@@ -77,11 +79,14 @@ api.interceptors.response.use(
             console.log("[API] Token refreshed successfully");
           })
           .catch((err) => {
-            // إذا فشل refresh → امسح المستخدم
+            // Clear auth only on terminal auth failures.
             console.error("[API] Refresh failed:", err);
-            authStore.user = null;
-            authStore.isInitialized = true;
-            throw new Error("Session expired");
+            const refreshStatus = err.response?.status;
+            if (refreshStatus === 401 || refreshStatus === 403) {
+              authStore.user = null;
+              authStore.isInitialized = true;
+            }
+            throw err;
           })
           .finally(() => {
             isRefreshing = false;
@@ -94,9 +99,16 @@ api.interceptors.response.use(
         // Retry the original request
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, redirect to login if needed
+        // Refresh failed, clear auth only for terminal auth failures.
         const authStore = useAuthStore();
-        authStore.user = null;
+        const refreshStatus = refreshError?.response?.status;
+        if (refreshStatus === 409) {
+          return api(originalRequest);
+        }
+        if (refreshStatus === 401 || refreshStatus === 403) {
+          authStore.user = null;
+          authStore.isInitialized = true;
+        }
         return Promise.reject(refreshError);
       }
     }

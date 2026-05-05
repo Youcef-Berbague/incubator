@@ -1,5 +1,8 @@
 // controllers/logoutController.js
-const { deleteSingleRefreshToken, findUserByRefreshTokenId } = require("../models/tokensModels");
+const {
+  deleteSingleRefreshToken,
+  findUserByRefreshTokenId,
+} = require("../models/tokensModels");
 const { clearCookie } = require("../utils/tokensAndCookiesUtils");
 const jwt = require("jsonwebtoken");
 
@@ -13,8 +16,13 @@ const handleLogout = async (req, res, next) => {
     }
 
     const refreshToken = cookies.jwt;
-
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    } catch {
+      clearCookie(res);
+      return res.sendStatus(204);
+    }
 
     // هل التوكن موجود في الـ DB؟
     const tokenOwner = await findUserByRefreshTokenId(decoded.id);

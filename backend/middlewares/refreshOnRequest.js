@@ -35,6 +35,14 @@ const PROBABILISTIC_ROTATE_PERCENT = parseFloat(
   process.env.PROB_ROTATE_PCT || "0",
 );
 
+const FINGERPRINT_MIN_SIMILARITY = parseFloat(
+  process.env.FINGERPRINT_MIN_SIMILARITY || "70",
+);
+
+const FINGERPRINT_SOFT_FAIL = String(
+  process.env.FINGERPRINT_SOFT_FAIL ?? "true",
+).toLowerCase() === "true";
+
 const getRefreshTokenTimeLeft = (token) => {
   try {
     const decoded = jwt.decode(token);
@@ -94,7 +102,7 @@ const refreshOnRequest = (options = {}) => {
         {},
       );
 
-      if (similarity < 80) {
+      if (similarity < FINGERPRINT_MIN_SIMILARITY) {
         await sendTelegramAlert(
           `🚨 محاولة استخدام Refresh Token من جهاز مختلف!\nuserId: ${
             tokenRecord.user_id
@@ -106,9 +114,16 @@ const refreshOnRequest = (options = {}) => {
           ip,
           ua,
         );
-        await deleteSingleRefreshToken(tokenRecord.uuid);
-        clearCookie(res);
-        return next();
+
+        if (!FINGERPRINT_SOFT_FAIL) {
+          await deleteSingleRefreshToken(tokenRecord.uuid);
+          clearCookie(res);
+          return next();
+        }
+
+        console.warn(
+          `[refreshOnRequest] low fingerprint similarity (${similarity}%), soft-fail enabled`,
+        );
       }
 
       // 🧩 المرحلة 4: التحقق من سلامة التوقيع JWT
@@ -182,11 +197,6 @@ const refreshOnRequest = (options = {}) => {
           );
 
           await deleteSingleRefreshToken(tokenRecord.uuid);
-
-          console.log(
-            "[refreshOnRequest] Token rotated successfully for user:",
-            tokenRecord.user_id,
-          );
         } catch (e) {
           console.error("[refreshOnRequest] rotation failed", e);
           // Keep existing cookie if rotation fails to avoid forced logout.

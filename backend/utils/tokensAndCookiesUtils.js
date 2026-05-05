@@ -11,10 +11,22 @@ const WRM_REFRESH_TOKEN_EXPIRE = "4h";
 const REFRESH_COOKIE_AGE = 7 * 24 * 60 * 60 * 1000;
 const WRM_REFRESH_COOKIE_AGE = 4 * 60 * 60 * 1000;
 
+const isProduction = process.env.NODE_ENV === "production";
+const normalizeSameSite = (value) => {
+  const normalized = String(value || "").toLowerCase();
+  if (normalized === "strict") return "Strict";
+  if (normalized === "none") return "None";
+  return "Lax";
+};
+const configuredSameSite = normalizeSameSite(
+  process.env.COOKIE_SAMESITE || (isProduction ? "Strict" : "Lax"),
+);
+const isSameSiteNone = configuredSameSite.toLowerCase() === "none";
+
 const cookieOption = () => ({
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "Strict",
+  secure: isProduction || isSameSiteNone,
+  sameSite: configuredSameSite,
 });
 
 const clearCookie = (res) => {
