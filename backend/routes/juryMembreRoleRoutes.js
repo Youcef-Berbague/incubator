@@ -14,17 +14,19 @@ const ROLES_LIST = require("../config/rolesList");
 // All routes require authentication
 router.use(verifyJWT);
 
-// GET all jury member roles - SuperAdmin, Admin
+// Matrix target: jury member role management is SuperAdmin-only
+
+// GET all jury member roles - SuperAdmin only
 router.get(
   "/",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
+  verifyRoles(ROLES_LIST.superAdmin),
   handleGetAllJuryMembreRoles
 );
 
-// GET jury member role by ID - SuperAdmin, Admin
+// GET jury member role by ID - SuperAdmin only
 router.get(
   "/:id",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
+  verifyRoles(ROLES_LIST.superAdmin),
   handleGetJuryMembreRoleById
 );
 

@@ -18,62 +18,48 @@ const ROLES_LIST = require("../config/rolesList");
 // All routes require authentication
 router.use(verifyJWT);
 
-// GET all juries - SuperAdmin, Admin
-router.get(
-  "/",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
-  handleGetAllJuries
-);
+// Matrix target: jury management is SuperAdmin-only
 
-// GET jury by ID - SuperAdmin, Admin
-router.get(
-  "/:id",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
-  handleGetJuryById
-);
+// GET all juries - SuperAdmin only
+router.get("/", verifyRoles(ROLES_LIST.superAdmin), handleGetAllJuries);
 
-// POST create jury - SuperAdmin, Admin
-router.post(
-  "/",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
-  handleCreateJury
-);
+// GET jury by ID - SuperAdmin only
+router.get("/:id", verifyRoles(ROLES_LIST.superAdmin), handleGetJuryById);
 
-// PUT update jury - SuperAdmin, Admin
-router.put(
-  "/:id",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
-  handleUpdateJury
-);
+// POST create jury - SuperAdmin only
+router.post("/", verifyRoles(ROLES_LIST.superAdmin), handleCreateJury);
+
+// PUT update jury - SuperAdmin only
+router.put("/:id", verifyRoles(ROLES_LIST.superAdmin), handleUpdateJury);
 
 // DELETE jury - SuperAdmin only
 router.delete("/:id", verifyRoles(ROLES_LIST.superAdmin), handleDeleteJury);
 
-// GET jury members - SuperAdmin, Admin
+// GET jury members - SuperAdmin only
 router.get(
   "/:juryId/members",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
+  verifyRoles(ROLES_LIST.superAdmin),
   handleGetJuryMembers
 );
 
-// POST assign member to jury - SuperAdmin, Admin
+// POST assign member to jury - SuperAdmin only
 router.post(
   "/:juryId/members/:memberId",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
+  verifyRoles(ROLES_LIST.superAdmin),
   handleAssignMemberToJury
 );
 
-// DELETE remove member from jury - SuperAdmin, Admin
+// DELETE remove member from jury - SuperAdmin only
 router.delete(
   "/:juryId/members/:memberId",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
+  verifyRoles(ROLES_LIST.superAdmin),
   handleRemoveMemberFromJury
 );
 
-// POST assign projects to jury - SuperAdmin, Admin
+// POST assign projects to jury - SuperAdmin only
 router.post(
   "/:juryId/projects",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
+  verifyRoles(ROLES_LIST.superAdmin),
   handleAssignProjectsToJury
 );
 

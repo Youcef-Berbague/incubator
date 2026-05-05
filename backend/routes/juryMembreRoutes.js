@@ -15,40 +15,26 @@ const ROLES_LIST = require("../config/rolesList");
 // All routes require authentication
 router.use(verifyJWT);
 
-// GET eligible users - superAdmin, Admin
+// Matrix target: jury member management is SuperAdmin-only
+
+// GET eligible users - SuperAdmin only
 router.get(
   "/eligible-users",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
+  verifyRoles(ROLES_LIST.superAdmin),
   handleGetEligibleUsers
 );
 
-// GET all jury members - superAdmin, Admin
-router.get(
-  "/",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
-  handleGetAllJuryMembres
-);
+// GET all jury members - SuperAdmin only
+router.get("/", verifyRoles(ROLES_LIST.superAdmin), handleGetAllJuryMembres);
 
-// GET jury member by ID - superAdmin, Admin
-router.get(
-  "/:id",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
-  handleGetJuryMembreById
-);
+// GET jury member by ID - SuperAdmin only
+router.get("/:id", verifyRoles(ROLES_LIST.superAdmin), handleGetJuryMembreById);
 
-// POST create jury member - superAdmin, Admin
-router.post(
-  "/",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
-  handleCreateJuryMembre
-);
+// POST create jury member - SuperAdmin only
+router.post("/", verifyRoles(ROLES_LIST.superAdmin), handleCreateJuryMembre);
 
-// PUT update jury member - superAdmin, Admin
-router.put(
-  "/:id",
-  verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
-  handleUpdateJuryMembre
-);
+// PUT update jury member - SuperAdmin only
+router.put("/:id", verifyRoles(ROLES_LIST.superAdmin), handleUpdateJuryMembre);
 
 // DELETE jury member - superAdmin only
 router.delete(
