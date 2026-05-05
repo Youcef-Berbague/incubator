@@ -141,7 +141,7 @@ const handleCreateJuryMembre = async (req, res) => {
 
 // @desc Update jury member
 // @route PUT /api/jury-members/:id
-// @access Private (SuperAdmin, Admin)
+// @access Private (SuperAdmin)
 const handleUpdateJuryMembre = async (req, res) => {
   try {
     const { id } = req.params;
@@ -268,7 +268,7 @@ const handleDeleteJuryMembre = async (req, res) => {
 
 // @desc Get eligible users for jury
 // @route GET /api/jury-members/eligible-users
-// @access Private (SuperAdmin, Admin)
+// @access Private (SuperAdmin)
 const handleGetEligibleUsers = async (req, res) => {
   try {
     const users = await getEligibleUsers();
