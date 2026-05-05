@@ -20,15 +20,16 @@ const ROLES = require("../config/rolesList");
 // Protect public registration endpoint from spam
 router.post("/projects/register", registerLimiter, createNewRegistration);
 
-/**
- * Protected routes - Require authentication
- */
+// Apply JWT verification to all routes below (protected routes)
+router.use(verifyJWT);
 
 /**
- * Get all registrations with optional filters
- * GET /api/registrations?status=pending&facultyId=1&page=1&limit=10
- * Requires: Admin or SuperAdmin role
- */
+ * Protected routes - Require authentication
+router.get(
+  "/registrations",
+  verifyRoles(ROLES.admin, ROLES.superAdmin),
+  getAll
+);
 router.get(
   "/registrations",
   verifyJWT,
@@ -43,7 +44,6 @@ router.get(
  */
 router.get(
   "/registrations/:id",
-  verifyJWT,
   verifyRoles(ROLES.admin, ROLES.superAdmin),
   getOne
 );
@@ -55,7 +55,6 @@ router.get(
  */
 router.patch(
   "/registrations/:id/status",
-  verifyJWT,
   verifyRoles(ROLES.admin, ROLES.superAdmin),
   updateStatus
 );
@@ -67,7 +66,6 @@ router.patch(
  */
 router.delete(
   "/registrations/:id",
-  verifyJWT,
   verifyRoles(ROLES.superAdmin),
   deleteOne
 );
