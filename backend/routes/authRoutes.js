@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post("/login", loginLimiter, handleLogin);
 router.post("/register", registerLimiter, handleNewUser);
-router.post("/logout", handleLogout);
+router.post("/logout", refreshTokenLimiter, handleLogout);
 
 router.get("/refresh", refreshTokenLimiter, handleRefreshToken);
 router.get("/status", require("../controllers/userStatusController"));

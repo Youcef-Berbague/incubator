@@ -143,3 +143,28 @@ module.exports = {
   registerLimiter,
   refreshTokenLimiter, // ✅ تمت إضافته هنا
 };
+
+// Lightweight AI endpoint limiter to prevent abuse
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30,
+  message: { error: "Too many AI requests, slow down." },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const token = req.cookies?.jwt;
+    return token ? `ai_${token.slice(0, 20)}` : getRealIP(req);
+  },
+  handler: (req, res, next, options) => {
+    const ip = getRealIP(req);
+    const ua = req.headers["user-agent"] || "unknown";
+    sendTelegramAlert(
+      `🤖 AI Endpoint Rate Limit Hit\nURL: ${req.url}\nIP: ${ip}`,
+      ip,
+      ua,
+    );
+    res.status(429).json(options.message);
+  },
+});
+
+module.exports.aiLimiter = aiLimiter;

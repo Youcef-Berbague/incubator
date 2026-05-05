@@ -11,6 +11,7 @@ const {
   handleAssignSupervisorToProject,
   handleRemoveSupervisorFromProject,
 } = require("../controllers/projectsController");
+const { validateCreateProject } = require("../middlewares/validators");
 const verifyJWT = require("../middlewares/verifyJWT");
 const verifyRoles = require("../middlewares/verifyRoles");
 const ROLES_LIST = require("../config/rolesList");
@@ -37,6 +38,7 @@ router.get(
 router.post(
   "/",
   verifyRoles(ROLES_LIST.superAdmin, ROLES_LIST.admin),
+  validateCreateProject,
   handleCreateProject
 );
 

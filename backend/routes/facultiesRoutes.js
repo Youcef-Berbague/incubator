@@ -26,7 +26,14 @@ router.get("/departments/:id", getDepartmentById);
 
 router.use(verifyJWT);
 
-router.post("/faculties", verifyRoles(ROLES.superAdmin), createFaculty);
+const { validateCreateFaculty } = require("../middlewares/validators");
+
+router.post(
+  "/faculties",
+  verifyRoles(ROLES.superAdmin),
+  validateCreateFaculty,
+  createFaculty,
+);
 router.put("/faculties/:id", verifyRoles(ROLES.superAdmin), updateFaculty);
 router.delete("/faculties/:id", verifyRoles(ROLES.superAdmin), deleteFaculty);
 

@@ -1,6 +1,7 @@
 // routes/registrationRoutes.js
 const express = require("express");
 const router = express.Router();
+const { registerLimiter } = require("../config/limiterConfig");
 const {
   createNewRegistration,
   getAll,
@@ -16,7 +17,8 @@ const ROLES = require("../config/rolesList");
  * Public route - Submit new project registration
  * POST /api/projects/register
  */
-router.post("/projects/register", createNewRegistration);
+// Protect public registration endpoint from spam
+router.post("/projects/register", registerLimiter, createNewRegistration);
 
 /**
  * Protected routes - Require authentication

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const verifyJWT = require("../middlewares/verifyJWT");
 const verifyRoles = require("../middlewares/verifyRoles");
 const ROLES = require("../config/rolesList");
 const {
@@ -16,6 +17,9 @@ const {
   getAvailableRoles,
 } = require("../controllers/usersController");
 
+// Ensure all user routes require a valid access token (defense-in-depth)
+router.use(verifyJWT);
+
 router.get("/me", getMe);
 router.get("/me/projects", getMeProjects);
 router.get("/me/registration", getMeRegistration);
@@ -29,7 +33,14 @@ router.get(
 
 // داخل routes/UsersRoutes.js
 router.get("/all", verifyRoles(ROLES.admin, ROLES.superAdmin), getAll);
-router.post("/create", verifyRoles(ROLES.admin, ROLES.superAdmin), createNew);
+const { validateCreateUser } = require("../middlewares/validators");
+
+router.post(
+  "/create",
+  verifyRoles(ROLES.admin, ROLES.superAdmin),
+  validateCreateUser,
+  createNew,
+);
 router.put("/update", verifyRoles(ROLES.admin, ROLES.superAdmin), updateuser);
 router.delete("/delete", verifyRoles(ROLES.superAdmin), deleteuser);
 router.get("/:id", verifyRoles(ROLES.admin, ROLES.superAdmin), getuser);

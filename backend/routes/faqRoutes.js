@@ -21,7 +21,14 @@ router.get("/faqs/:id", getFAQById);
 
 router.use(verifyJWT);
 
-router.post("/faqs", verifyRoles(ROLES.superAdmin), createFAQ);
+const { validateCreateFAQ } = require("../middlewares/validators");
+
+router.post(
+  "/faqs",
+  verifyRoles(ROLES.superAdmin),
+  validateCreateFAQ,
+  createFAQ,
+);
 router.put("/faqs/:id", verifyRoles(ROLES.superAdmin), updateFAQ);
 router.delete("/faqs/:id", verifyRoles(ROLES.superAdmin), deleteFAQ);
 
