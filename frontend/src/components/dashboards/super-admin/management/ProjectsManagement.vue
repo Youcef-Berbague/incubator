@@ -57,6 +57,17 @@ const filteredProjects = computed(() => {
   });
 });
 
+const projectStats = computed(() => {
+  const total = projects.value.length;
+  const incubated = projects.value.filter((p) => Boolean(p.incubated)).length;
+  const avgProgress = total
+    ? Math.round(
+        projects.value.reduce((sum, p) => sum + Number(p.progress_percent || 0), 0) / total
+      )
+    : 0;
+  return { total, incubated, avgProgress };
+});
+
 const fetchProjects = async () => {
   loading.value = true;
   error.value = "";
@@ -230,8 +241,23 @@ onMounted(async () => {
     <div v-if="error" class="alert error">{{ error }}</div>
     <div v-if="successMessage" class="alert success">{{ successMessage }}</div>
 
+    <div class="stats">
+      <div class="stat">
+        <span>Total</span>
+        <strong>{{ projectStats.total }}</strong>
+      </div>
+      <div class="stat">
+        <span>Incubated</span>
+        <strong>{{ projectStats.incubated }}</strong>
+      </div>
+      <div class="stat">
+        <span>Avg Progress</span>
+        <strong>{{ projectStats.avgProgress }}%</strong>
+      </div>
+    </div>
+
     <div class="filters">
-      <input v-model="filters.search" placeholder="Search by title or code" />
+      <input v-model="filters.search" placeholder="Search by title or code" aria-label="Search projects" />
       <select v-model="filters.departmentId">
         <option value="">All Departments</option>
         <option v-for="department in departments" :key="department.id" :value="department.id">
@@ -266,8 +292,15 @@ onMounted(async () => {
             <td>{{ project.title }}</td>
             <td>{{ project.project_code || 'N/A' }}</td>
             <td>{{ getDepartmentName(project) }}</td>
-            <td>{{ project.progress_percent ?? 0 }}%</td>
-            <td>{{ project.incubated ? 'Yes' : 'No' }}</td>
+            <td>
+              <div class="progress-cell">
+                <div class="progress-track">
+                  <span :style="{ width: `${project.progress_percent ?? 0}%` }"></span>
+                </div>
+                <small>{{ project.progress_percent ?? 0 }}%</small>
+              </div>
+            </td>
+            <td><span class="badge" :class="project.incubated ? 'ok' : 'muted'">{{ project.incubated ? 'Yes' : 'No' }}</span></td>
             <td class="row-actions">
               <button class="mini" @click="openEditModal(project)">Edit</button>
               <button class="mini danger" @click="confirmDelete(project)">Delete</button>
@@ -285,7 +318,7 @@ onMounted(async () => {
         <h3>{{ isEditMode ? 'Edit Project' : 'Create Project' }}</h3>
 
         <label>Title</label>
-        <input v-model="formData.title" />
+        <input v-model="formData.title" maxlength="250" />
 
         <label>Project Code</label>
         <input v-model="formData.project_code" />
@@ -325,7 +358,7 @@ onMounted(async () => {
         </label>
 
         <div class="modal-actions">
-          <button class="btn-secondary" @click="showModal = false">Cancel</button>
+          <button class="btn-secondary" :disabled="saving" @click="showModal = false">Cancel</button>
           <button class="btn-primary" :disabled="saving" @click="saveProject">
             {{ saving ? 'Saving...' : 'Save' }}
           </button>
@@ -338,7 +371,7 @@ onMounted(async () => {
         <h3>Delete Project</h3>
         <p>Are you sure you want to delete <strong>{{ projectToDelete?.title }}</strong>?</p>
         <div class="modal-actions">
-          <button class="btn-secondary" @click="showDeleteModal = false">Cancel</button>
+          <button class="btn-secondary" :disabled="deleting" @click="showDeleteModal = false">Cancel</button>
           <button class="btn-danger" :disabled="deleting" @click="deleteProject">
             {{ deleting ? 'Deleting...' : 'Delete' }}
           </button>
@@ -349,28 +382,42 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.projects-management { padding: 24px; }
-.header { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.projects-management { padding: 24px; background: linear-gradient(180deg, #f8fbff 0%, #f6f9f7 100%); min-height: 100vh; }
+.header { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 16px; align-items: end; }
 .actions { display: flex; gap: 10px; align-items: center; }
 .alert { padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; }
 .alert.error { background: #fdecec; color: #b42318; }
 .alert.success { background: #edfdf3; color: #027a48; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.stat { background: #fff; border: 1px solid #e7eefb; border-radius: 12px; padding: 12px; display: grid; gap: 4px; }
+.stat span { color: #667085; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+.stat strong { color: #101828; font-size: 22px; }
 .filters { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-input, select { width: 100%; padding: 10px; border: 1px solid #d0d5dd; border-radius: 8px; }
+input, select { width: 100%; padding: 10px; border: 1px solid #d0d5dd; border-radius: 8px; background: #fff; }
+input:focus, select:focus { outline: none; border-color: #0c7a43; box-shadow: 0 0 0 3px rgba(12, 122, 67, 0.15); }
 .table-wrap { background: #fff; border: 1px solid #eaecf0; border-radius: 12px; overflow: auto; }
 table { width: 100%; border-collapse: collapse; }
-th, td { padding: 12px; border-bottom: 1px solid #f2f4f7; text-align: left; }
+th, td { padding: 12px; border-bottom: 1px solid #f2f4f7; text-align: left; vertical-align: middle; }
+th { font-size: 12px; color: #475467; letter-spacing: .04em; text-transform: uppercase; }
 .row-actions { display: flex; gap: 8px; }
 .empty { text-align: center; color: #667085; }
-.btn-primary, .btn-secondary, .btn-danger, .mini { border: none; border-radius: 8px; padding: 9px 12px; cursor: pointer; }
+.btn-primary, .btn-secondary, .btn-danger, .mini { border: none; border-radius: 8px; padding: 9px 12px; cursor: pointer; transition: .2s ease; }
 .btn-primary { background: #0c7a43; color: #fff; }
 .btn-secondary { background: #f2f4f7; color: #101828; }
 .btn-danger, .mini.danger { background: #d92d20; color: #fff; }
 .mini { background: #344054; color: #fff; padding: 6px 10px; }
-.loading { padding: 20px; background: #fff; border-radius: 10px; }
+.btn-primary:hover, .btn-secondary:hover, .btn-danger:hover, .mini:hover { transform: translateY(-1px); }
+.btn-primary:disabled, .btn-secondary:disabled, .btn-danger:disabled, .mini:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+.loading { padding: 20px; background: #fff; border-radius: 10px; border: 1px solid #eaecf0; color: #475467; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: grid; place-items: center; padding: 16px; z-index: 1000; }
 .modal { width: min(640px, 100%); background: #fff; border-radius: 12px; padding: 18px; display: grid; gap: 8px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 .checkbox { display: flex; align-items: center; gap: 8px; }
-@media (max-width: 900px) { .filters { grid-template-columns: 1fr; } .header { flex-direction: column; } }
+.progress-cell { display: grid; gap: 4px; min-width: 120px; }
+.progress-track { height: 8px; border-radius: 999px; background: #eef2f7; overflow: hidden; }
+.progress-track span { display: block; height: 100%; background: linear-gradient(90deg, #0c7a43, #2da562); }
+.badge { display: inline-flex; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.badge.ok { background: #e8f8ee; color: #0c7a43; }
+.badge.muted { background: #f2f4f7; color: #344054; }
+@media (max-width: 900px) { .filters { grid-template-columns: 1fr; } .header { flex-direction: column; align-items: flex-start; } .stats { grid-template-columns: 1fr; } }
 </style>
