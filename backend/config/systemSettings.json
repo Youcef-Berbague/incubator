@@ -1,0 +1,19 @@
+{
+  "registration": {
+    "minProjectTitleLength": 5,
+    "maxProjectTitleLength": 255,
+    "maxStudentsPerProject": 6,
+    "maxSupervisorsPerProject": 3
+  },
+  "security": {
+    "fingerprintMinSimilarity": 70,
+    "fingerprintSoftFail": true,
+    "refreshRotationThresholdMs": 86400000,
+    "rotateAfterRequests": 50,
+    "probabilisticRotatePercent": 0
+  },
+  "features": {
+    "aiChatPublic": true,
+    "projectRegistrationPublic": true
+  }
+}

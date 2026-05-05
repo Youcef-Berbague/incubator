@@ -2,8 +2,8 @@
 import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/useAuthStore";
-import SuperAdminDashboard from "../components/dashboards/SuperAdminDashboard.vue";
-import StudentDashboard from "../components/dashboards/StudentDashboard.vue";
+import SuperAdminDashboard from "../components/dashboards/super-admin/SuperAdminDashboard.vue";
+import StudentDashboard from "../components/dashboards/student/StudentDashboard.vue";
 import { ROLES, getHighestRole } from "../config/roles";
 
 const router = useRouter();

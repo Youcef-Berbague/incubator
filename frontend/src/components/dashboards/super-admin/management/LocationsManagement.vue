@@ -1,14 +1,14 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "../../stores/useAuthStore";
-import api from "../../api.js";
+import { useAuthStore } from "../../../../stores/useAuthStore";
+import api from "../../../../api.js";
 
 const router = useRouter();
 const authStore = useAuthStore();
 
 // Data
-const statuses = ref([]);
+const locations = ref([]);
 const loading = ref(false);
 const error = ref("");
 const successMessage = ref("");
@@ -24,131 +24,128 @@ const showCreateModal = ref(false);
 const showEditModal = ref(false);
 const showDeleteModal = ref(false);
 
-const selectedStatus = ref(null);
-const statusToDelete = ref(null);
+const selectedLocation = ref(null);
+const locationToDelete = ref(null);
 
 // Form data
-const statusForm = ref({
-  status_name: "",
+const locationForm = ref({
+  location_name: "",
 });
 
-// Fetch statuses
-const fetchStatuses = async () => {
+// Fetch locations
+const fetchLocations = async () => {
   loading.value = true;
   error.value = "";
 
   try {
-    const response = await api.get("/pre-incubation-statuses");
-    statuses.value = response.data.data || [];
+    const response = await api.get("/locations");
+    locations.value = response.data.data || [];
   } catch (err) {
-    console.error("Error fetching pre-incubation statuses:", err);
-    error.value = "Failed to fetch pre-incubation statuses. Please try again.";
+    console.error("Error fetching locations:", err);
+    error.value = "Failed to fetch locations. Please try again.";
   } finally {
     loading.value = false;
   }
 };
 
-// Filtered statuses
-const filteredStatuses = computed(() => {
-  let result = [...statuses.value];
+// Filtered locations
+const filteredLocations = computed(() => {
+  let result = [...locations.value];
 
   if (filters.value.search) {
     const search = filters.value.search.toLowerCase();
-    result = result.filter((status) =>
-      status.status_name?.toLowerCase().includes(search)
+    result = result.filter((location) =>
+      location.location_name?.toLowerCase().includes(search)
     );
   }
 
   return result;
 });
 
-// View status details
-const viewStatus = (status) => {
-  selectedStatus.value = status;
+// View location details
+const viewLocation = (location) => {
+  selectedLocation.value = location;
   showDetailsModal.value = true;
 };
 
 // Open create modal
 const openCreateModal = () => {
-  statusForm.value = {
-    status_name: "",
+  locationForm.value = {
+    location_name: "",
   };
   showCreateModal.value = true;
 };
 
-// Create status
-const createStatus = async () => {
+// Create location
+const createLocation = async () => {
   loading.value = true;
   error.value = "";
   successMessage.value = "";
 
   try {
-    await api.post("/pre-incubation-statuses", statusForm.value);
-    successMessage.value = "Pre-incubation status created successfully!";
+    await api.post("/locations", locationForm.value);
+    successMessage.value = "Location created successfully!";
     showCreateModal.value = false;
-    await fetchStatuses();
+    await fetchLocations();
   } catch (err) {
-    console.error("Error creating status:", err);
-    error.value =
-      err.response?.data?.message || "Failed to create pre-incubation status.";
+    console.error("Error creating location:", err);
+    error.value = err.response?.data?.message || "Failed to create location.";
   } finally {
     loading.value = false;
   }
 };
 
 // Open edit modal
-const openEditModal = (status) => {
-  selectedStatus.value = status;
-  statusForm.value = {
-    status_name: status.status_name,
+const openEditModal = (location) => {
+  selectedLocation.value = location;
+  locationForm.value = {
+    location_name: location.location_name,
   };
   showEditModal.value = true;
 };
 
-// Update status
-const updateStatus = async () => {
+// Update location
+const updateLocation = async () => {
   loading.value = true;
   error.value = "";
   successMessage.value = "";
 
   try {
     await api.put(
-      `/pre-incubation-statuses/${selectedStatus.value.id}`,
-      statusForm.value
+      `/locations/${selectedLocation.value.id}`,
+      locationForm.value
     );
-    successMessage.value = "Pre-incubation status updated successfully!";
+    successMessage.value = "Location updated successfully!";
     showEditModal.value = false;
-    await fetchStatuses();
+    await fetchLocations();
   } catch (err) {
-    console.error("Error updating status:", err);
-    error.value =
-      err.response?.data?.message || "Failed to update pre-incubation status.";
+    console.error("Error updating location:", err);
+    error.value = err.response?.data?.message || "Failed to update location.";
   } finally {
     loading.value = false;
   }
 };
 
 // Open delete confirmation
-const openDeleteModal = (status) => {
-  statusToDelete.value = status;
+const openDeleteModal = (location) => {
+  locationToDelete.value = location;
   showDeleteModal.value = true;
 };
 
-// Delete status
-const deleteStatus = async () => {
+// Delete location
+const deleteLocation = async () => {
   loading.value = true;
   error.value = "";
   successMessage.value = "";
 
   try {
-    await api.delete(`/pre-incubation-statuses/${statusToDelete.value.id}`);
-    successMessage.value = "Pre-incubation status deleted successfully!";
+    await api.delete(`/locations/${locationToDelete.value.id}`);
+    successMessage.value = "Location deleted successfully!";
     showDeleteModal.value = false;
-    await fetchStatuses();
+    await fetchLocations();
   } catch (err) {
-    console.error("Error deleting status:", err);
-    error.value =
-      err.response?.data?.message || "Failed to delete pre-incubation status.";
+    console.error("Error deleting location:", err);
+    error.value = err.response?.data?.message || "Failed to delete location.";
   } finally {
     loading.value = false;
   }
@@ -161,12 +158,12 @@ const clearMessages = () => {
 };
 
 onMounted(() => {
-  fetchStatuses();
+  fetchLocations();
 });
 </script>
 
 <template>
-  <div class="pre-incubation-management">
+  <div class="locations-management">
     <div class="container">
       <!-- Header -->
       <div class="page-header">
@@ -179,13 +176,13 @@ onMounted(() => {
             <span class="back-icon">←</span>
           </button>
           <div class="header-text">
-            <h1>Pre-Incubation Status Management</h1>
-            <p>Manage pre-incubation statuses for projects</p>
+            <h1>Locations Management</h1>
+            <p>Manage physical locations for jury sessions and trainings</p>
           </div>
         </div>
         <button @click="openCreateModal" class="btn btn-primary">
           <span class="icon">➕</span>
-          Add New Status
+          Add New Location
         </button>
       </div>
 
@@ -206,49 +203,52 @@ onMounted(() => {
           <input
             v-model="filters.search"
             type="text"
-            placeholder="Search statuses..."
+            placeholder="Search locations..."
             class="form-control"
           />
         </div>
       </div>
 
       <!-- Loading -->
-      <div v-if="loading && statuses.length === 0" class="loading-state">
+      <div v-if="loading && locations.length === 0" class="loading-state">
         <div class="spinner"></div>
-        <p>Loading statuses...</p>
+        <p>Loading locations...</p>
       </div>
 
-      <!-- Statuses Grid -->
-      <div v-else class="statuses-grid">
-        <div v-if="filteredStatuses.length === 0" class="empty-state">
-          <div class="empty-icon">📋</div>
-          <p>No pre-incubation statuses found</p>
+      <!-- Locations List -->
+      <div v-else class="locations-grid">
+        <div v-if="filteredLocations.length === 0" class="empty-state">
+          <div class="empty-icon">📍</div>
+          <p>No locations found</p>
         </div>
 
         <div
-          v-for="status in filteredStatuses"
-          :key="status.id"
-          class="status-card"
+          v-for="location in filteredLocations"
+          :key="location.id"
+          class="location-card"
         >
-          <div class="status-content">
-            <div class="status-icon">🌱</div>
-            <div class="status-info">
-              <h3 class="status-name">{{ status.status_name }}</h3>
-              <p class="status-id">ID: {{ status.id }}</p>
+          <div class="location-content">
+            <div class="location-icon">🏢</div>
+            <div class="location-info">
+              <h3 class="location-name">{{ location.location_name }}</h3>
+              <p class="location-id">ID: {{ location.id }}</p>
             </div>
           </div>
-          <div class="status-actions">
-            <button @click="viewStatus(status)" class="btn btn-sm btn-outline">
+          <div class="location-actions">
+            <button
+              @click="viewLocation(location)"
+              class="btn btn-sm btn-outline"
+            >
               View
             </button>
             <button
-              @click="openEditModal(status)"
+              @click="openEditModal(location)"
               class="btn btn-sm btn-outline"
             >
               Edit
             </button>
             <button
-              @click="openDeleteModal(status)"
+              @click="openDeleteModal(location)"
               class="btn btn-sm btn-danger"
             >
               Delete
@@ -260,7 +260,7 @@ onMounted(() => {
       <!-- Stats -->
       <div class="stats-footer">
         <p>
-          Total Pre-Incubation Statuses: <strong>{{ statuses.length }}</strong>
+          Total Locations: <strong>{{ locations.length }}</strong>
         </p>
       </div>
     </div>
@@ -273,17 +273,17 @@ onMounted(() => {
     >
       <div class="modal-content modal-small" @click.stop>
         <div class="modal-header">
-          <h2>Status Details</h2>
+          <h2>Location Details</h2>
           <button @click="showDetailsModal = false" class="close-btn">×</button>
         </div>
         <div class="modal-body">
           <div class="detail-group">
-            <label>Status ID</label>
-            <p>{{ selectedStatus.id }}</p>
+            <label>Location ID</label>
+            <p>{{ selectedLocation.id }}</p>
           </div>
           <div class="detail-group">
-            <label>Status Name</label>
-            <p>{{ selectedStatus.status_name }}</p>
+            <label>Location Name</label>
+            <p>{{ selectedLocation.location_name }}</p>
           </div>
         </div>
       </div>
@@ -300,7 +300,9 @@ onMounted(() => {
     >
       <div class="modal-content modal-small" @click.stop>
         <div class="modal-header">
-          <h2>{{ showCreateModal ? "Create New Status" : "Edit Status" }}</h2>
+          <h2>
+            {{ showCreateModal ? "Create New Location" : "Edit Location" }}
+          </h2>
           <button
             @click="
               showCreateModal = false;
@@ -313,19 +315,21 @@ onMounted(() => {
         </div>
         <div class="modal-body">
           <form
-            @submit.prevent="showCreateModal ? createStatus() : updateStatus()"
+            @submit.prevent="
+              showCreateModal ? createLocation() : updateLocation()
+            "
           >
             <div class="form-group">
-              <label>Status Name <span class="required">*</span></label>
+              <label>Location Name <span class="required">*</span></label>
               <input
-                v-model="statusForm.status_name"
+                v-model="locationForm.location_name"
                 type="text"
                 required
-                maxlength="30"
-                placeholder="e.g., Initial Review, Under Evaluation"
+                maxlength="50"
+                placeholder="e.g., Main Hall, Conference Room A"
                 class="form-control"
               />
-              <small class="form-hint">Maximum 30 characters</small>
+              <small class="form-hint">Maximum 50 characters</small>
             </div>
             <div class="modal-actions">
               <button
@@ -343,8 +347,8 @@ onMounted(() => {
                   loading
                     ? "Saving..."
                     : showCreateModal
-                    ? "Create Status"
-                    : "Update Status"
+                    ? "Create Location"
+                    : "Update Location"
                 }}
               </button>
             </div>
@@ -365,13 +369,13 @@ onMounted(() => {
           <button @click="showDeleteModal = false" class="close-btn">×</button>
         </div>
         <div class="modal-body">
-          <p>Are you sure you want to delete this pre-incubation status?</p>
+          <p>Are you sure you want to delete this location?</p>
           <p class="warning-text">
-            <strong>Status:</strong> {{ statusToDelete?.status_name }}
+            <strong>Location:</strong> {{ locationToDelete?.location_name }}
           </p>
           <p class="text-muted">
-            This action cannot be undone. This status cannot be deleted if it's
-            assigned to any projects.
+            This action cannot be undone. This location cannot be deleted if
+            it's assigned to any jury sessions or trainings.
           </p>
         </div>
         <div class="modal-actions">
@@ -379,11 +383,11 @@ onMounted(() => {
             Cancel
           </button>
           <button
-            @click="deleteStatus"
+            @click="deleteLocation"
             class="btn btn-danger"
             :disabled="loading"
           >
-            {{ loading ? "Deleting..." : "Delete Status" }}
+            {{ loading ? "Deleting..." : "Delete Location" }}
           </button>
         </div>
       </div>
@@ -392,7 +396,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.pre-incubation-management {
+.locations-management {
   min-height: 100vh;
   background: #f5f7fa;
   padding: 24px 0;
@@ -563,14 +567,14 @@ onMounted(() => {
   }
 }
 
-.statuses-grid {
+.locations-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
   margin-bottom: 24px;
 }
 
-.status-card {
+.location-card {
   background: white;
   border-radius: 12px;
   padding: 24px;
@@ -582,48 +586,48 @@ onMounted(() => {
   border: 1px solid #f7fafc;
 }
 
-.status-card:hover {
+.location-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
   border-color: #e2e8f0;
 }
 
-.status-content {
+.location-content {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.status-icon {
+.location-icon {
   font-size: 40px;
   width: 60px;
   height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #38b2ac 0%, #2c7a7b 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 12px;
   flex-shrink: 0;
 }
 
-.status-info {
+.location-info {
   flex: 1;
 }
 
-.status-name {
+.location-name {
   font-size: 18px;
   font-weight: 600;
   color: #1a202c;
   margin: 0 0 4px 0;
 }
 
-.status-id {
+.location-id {
   font-size: 13px;
   color: #718096;
   margin: 0;
 }
 
-.status-actions {
+.location-actions {
   display: flex;
   gap: 8px;
   padding-top: 16px;
@@ -838,11 +842,11 @@ onMounted(() => {
     gap: 16px;
   }
 
-  .statuses-grid {
+  .locations-grid {
     grid-template-columns: 1fr;
   }
 
-  .status-actions {
+  .location-actions {
     flex-wrap: wrap;
   }
 }

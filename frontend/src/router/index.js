@@ -6,17 +6,17 @@ import Register from "../views/Register.vue";
 import Login from "../views/Login.vue";
 import Dashboard from "../views/Dashboard.vue";
 import RegistrationSuccess from "../views/RegistrationSuccess.vue";
-import RegistrationsManagement from "../components/dashboards/RegistrationsManagement.vue";
-import UsersManagement from "../components/dashboards/UsersManagement.vue";
-import FacultiesManagement from "../components/dashboards/FacultiesManagement.vue";
-import MyAccountSettings from "../components/dashboards/MyAccountSettings.vue";
-import FAQManagement from "../components/dashboards/FAQManagement.vue";
-import AccelerationStatusManagement from "../components/dashboards/AccelerationStatusManagement.vue";
-import LocationsManagement from "../components/dashboards/LocationsManagement.vue";
-import PartnersManagement from "../components/dashboards/PartnersManagement.vue";
-import PreIncubationStatusManagement from "../components/dashboards/PreIncubationStatusManagement.vue";
-import JuryMemberRolesManagement from "../components/dashboards/JuryMemberRolesManagement.vue";
-import JuriesManagement from "../components/dashboards/JuriesManagement.vue";
+import RegistrationsManagement from "../components/dashboards/super-admin/management/RegistrationsManagement.vue";
+import UsersManagement from "../components/dashboards/super-admin/management/UsersManagement.vue";
+import FacultiesManagement from "../components/dashboards/super-admin/management/FacultiesManagement.vue";
+import MyAccountSettings from "../components/dashboards/shared/MyAccountSettings.vue";
+import FAQManagement from "../components/dashboards/super-admin/management/FAQManagement.vue";
+import AccelerationStatusManagement from "../components/dashboards/super-admin/management/AccelerationStatusManagement.vue";
+import LocationsManagement from "../components/dashboards/super-admin/management/LocationsManagement.vue";
+import PartnersManagement from "../components/dashboards/super-admin/management/PartnersManagement.vue";
+import PreIncubationStatusManagement from "../components/dashboards/super-admin/management/PreIncubationStatusManagement.vue";
+import JuryMemberRolesManagement from "../components/dashboards/super-admin/management/JuryMemberRolesManagement.vue";
+import JuriesManagement from "../components/dashboards/super-admin/management/JuriesManagement.vue";
 
 const routes = [
   {
