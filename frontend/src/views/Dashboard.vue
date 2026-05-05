@@ -3,20 +3,13 @@ import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/useAuthStore";
 import SuperAdminDashboard from "../components/dashboards/SuperAdminDashboard.vue";
-
+import StudentDashboard from "../components/dashboards/StudentDashboard.vue";
+import { ROLES, getHighestRole } from "../config/roles";
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-// Role constants (must match backend)
-const ROLES = {
-  superAdmin: 100,
-  admin: 90,
-  coach: 70,
-  supervisor: 60,
-  student: 40, // Matches backend rolesList.js
-  guest: 10,
-};
+const getUserRole = () => getHighestRole(authStore.user?.role);
 
 // Check if user is authenticated and has appropriate role
 onMounted(async () => {
@@ -30,34 +23,13 @@ onMounted(async () => {
     router.push("/login");
     return;
   }
-
-  // For students, check if they have registered a project
-  const userRole = Array.isArray(authStore.user.role)
-    ? Math.max(...authStore.user.role)
-    : authStore.user.role;
-
-  if (userRole === ROLES.student) {
-    // Ensure project registration status is checked
-    if (authStore.hasProject === null) {
-      await authStore.checkProjectRegistration();
-    }
-
-    // If student hasn't registered a project, redirect to registration page
-    if (authStore.hasProject === false) {
-      router.push("/register-project");
-      return;
-    }
-    // If student has a project, stay on this page (StudentDashboard component will load)
-  }
 });
 
 // Determine which dashboard component to show based on user role
 const dashboardComponent = computed(() => {
   if (!authStore.user?.role) return null;
 
-  const userRole = Array.isArray(authStore.user.role)
-    ? Math.max(...authStore.user.role)
-    : authStore.user.role;
+  const userRole = getUserRole();
 
   if (userRole >= ROLES.superAdmin) {
     return SuperAdminDashboard;
@@ -71,8 +43,7 @@ const dashboardComponent = computed(() => {
     // Future: SupervisorDashboard
     return null;
   } else if (userRole === ROLES.student) {
-    // Show student dashboard component if they have a project
-    return authStore.hasProject === true ? StudentDashboard : null;
+    return StudentDashboard;
   }
 
   return null;
@@ -81,9 +52,7 @@ const dashboardComponent = computed(() => {
 const dashboardTitle = computed(() => {
   if (!authStore.user?.role) return "Dashboard";
 
-  const userRole = Array.isArray(authStore.user.role)
-    ? Math.max(...authStore.user.role)
-    : authStore.user.role;
+  const userRole = getUserRole();
 
   if (userRole >= ROLES.superAdmin) return "Super Admin Dashboard";
   if (userRole >= ROLES.admin) return "Admin Dashboard";

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "../stores/useAuthStore";
+import { ROLES, getHighestRole } from "../config/roles";
 import Home from "../views/Home.vue";
 import Register from "../views/Register.vue";
 import Login from "../views/Login.vue";
@@ -136,7 +137,7 @@ router.beforeEach(async (to, from, next) => {
       // Check if route requires super admin role
       if (to.meta.requiresSuperAdmin) {
         const userRole = authStore.user?.role || [];
-        const isSuperAdmin = userRole.includes(100); // SuperAdmin only
+        const isSuperAdmin = userRole.includes(ROLES.superAdmin);
 
         if (!isSuperAdmin) {
           // Redirect to dashboard if not super admin
@@ -148,7 +149,7 @@ router.beforeEach(async (to, from, next) => {
       // Check if route requires admin role
       else if (to.meta.requiresAdmin) {
         const userRole = authStore.user?.role || [];
-        const isAdmin = userRole.includes(90) || userRole.includes(100); // Admin or SuperAdmin
+        const isAdmin = getHighestRole(userRole) >= ROLES.admin;
 
         if (!isAdmin) {
           // Redirect to dashboard if not admin
