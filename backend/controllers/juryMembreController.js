@@ -10,7 +10,7 @@ const {
 
 // @desc Get all jury members
 // @route GET /api/jury-members
-// @access Private (SuperAdmin, Admin)
+// @access Private (SuperAdmin)
 const handleGetAllJuryMembres = async (req, res) => {
   try {
     const members = await getAllJuryMembres();
@@ -31,7 +31,7 @@ const handleGetAllJuryMembres = async (req, res) => {
 
 // @desc Get jury member by ID
 // @route GET /api/jury-members/:id
-// @access Private (SuperAdmin, Admin)
+// @access Private (SuperAdmin)
 const handleGetJuryMembreById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -68,7 +68,7 @@ const handleGetJuryMembreById = async (req, res) => {
 
 // @desc Create new jury member
 // @route POST /api/jury-members
-// @access Private (SuperAdmin, Admin)
+// @access Private (SuperAdmin)
 const handleCreateJuryMembre = async (req, res) => {
   try {
     const { membre_id, role_id } = req.body;
@@ -186,7 +186,13 @@ const handleUpdateJuryMembre = async (req, res) => {
         });
       }
 
-      const eligibleRoles = [101, 555, 333, 777];
+        const roles = require("../config/rolesList");
+        const eligibleRoles = [
+          roles.supervisor,
+          roles.admin,
+          roles.coach,
+          roles.superAdmin,
+        ];
       const hasEligibleRole = user.role.some((role) =>
         eligibleRoles.includes(role)
       );
