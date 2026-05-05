@@ -6,9 +6,26 @@ const {
   deleteUserByID,
   updateUserByID,
 } = require("../models/UsersModels");
+const { getAccessibleProjects } = require("../models/projectsModels");
+const { getRegistrationByParticipantEmail } = require("../models/registrationModels");
 
 const bcrypt = require("bcrypt");
 const ROLES = require("../config/rolesList");
+
+const buildSafeUserResponse = (user) => ({
+  id: user.id,
+  first_name: user.first_name,
+  last_name: user.last_name,
+  email: user.email,
+  phone_number: user.phone_number,
+  role: user.role,
+  status: user.status,
+  academic_level: user.academic_level,
+  p_team_id: user.p_team_id,
+  departement_id: user.departement_id,
+  createdate: user.createdate,
+  updatedate: user.updatedate,
+});
 
 const getAll = async (req, res) => {
   try {
@@ -256,10 +273,136 @@ const getMe = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    res.json(user);
+    res.json(buildSafeUserResponse(user));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error fetching user." });
+  }
+};
+
+const updateMe = async (req, res) => {
+  try {
+    const requesterId = req.id;
+    const {
+      first_name,
+      last_name,
+      email,
+      phone_number,
+      password,
+      academic_level,
+    } = req.body;
+
+    const currentUser = await getUserByID(requesterId);
+    if (!currentUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const updatePayload = { id: requesterId };
+
+    if (first_name !== undefined) updatePayload.first_name = first_name;
+    if (last_name !== undefined) updatePayload.last_name = last_name;
+    if (phone_number !== undefined) updatePayload.phone_number = phone_number;
+    if (academic_level !== undefined)
+      updatePayload.academic_level = academic_level;
+
+    if (email !== undefined && email !== currentUser.email) {
+      const emailExists = await findUserByEmail(email);
+      if (emailExists && emailExists.id !== requesterId) {
+        return res.status(409).json({ message: "Email already exists." });
+      }
+      updatePayload.email = email;
+    }
+
+    if (password) {
+      updatePayload.password = await bcrypt.hash(password, 10);
+    }
+
+    const updated = await updateUserByID(updatePayload);
+
+    return res.json({
+      success: true,
+      message: "Account updated successfully.",
+      data: updated,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Error updating account." });
+  }
+};
+
+const getMeProjects = async (req, res) => {
+  try {
+    const projects = await getAccessibleProjects(req.id, req.roles);
+    return res.json({
+      success: true,
+      count: projects.length,
+      data: projects,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Error fetching projects." });
+  }
+};
+
+const getMeRegistration = async (req, res) => {
+  try {
+    const user = await getUserByID(req.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const registration = await getRegistrationByParticipantEmail(user.email);
+
+    return res.json({
+      success: true,
+      data: registration
+        ? {
+            id: registration.id,
+            title: registration.title,
+            status: registration.status,
+            submitted_at: registration.submitted_at,
+            faculty: registration.faculties,
+            department: registration.departements,
+          }
+        : null,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Error fetching registration." });
+  }
+};
+
+const getMeSummary = async (req, res) => {
+  try {
+    const user = await getUserByID(req.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const [projects, registration] = await Promise.all([
+      getAccessibleProjects(req.id, req.roles),
+      getRegistrationByParticipantEmail(user.email),
+    ]);
+
+    return res.json({
+      success: true,
+      data: {
+        user: buildSafeUserResponse(user),
+        projectCount: projects.length,
+        projects,
+        registration: registration
+          ? {
+              id: registration.id,
+              title: registration.title,
+              status: registration.status,
+              submitted_at: registration.submitted_at,
+            }
+          : null,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Error building user summary." });
   }
 };
 
@@ -306,5 +449,9 @@ module.exports = {
   deleteuser,
   getuser,
   getMe,
+  updateMe,
+  getMeProjects,
+  getMeRegistration,
+  getMeSummary,
   getAvailableRoles,
 };

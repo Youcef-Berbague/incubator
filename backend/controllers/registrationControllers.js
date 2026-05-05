@@ -9,8 +9,10 @@ const {
   verifyDepartmentBelongsToFaculty,
   checkDuplicateTitle,
   createApprovedProject,
+  getRegistrationByParticipantEmail,
 } = require("../models/registrationModels");
 const { sendTelegramAlert } = require("../config/notifier");
+const { readSettingsFile } = require("../config/systemSettings");
 
 /**
  * Validate email format
@@ -54,28 +56,41 @@ const createNewRegistration = async (req, res) => {
       supervisors,
     } = req.body;
 
+    const settings = await readSettingsFile();
+    const registrationRules = settings.registration;
+
     // Validation errors array
     const errors = [];
 
     // Validate project title
-    if (!projectTitle || projectTitle.trim().length < 5) {
+    if (
+      !projectTitle ||
+      projectTitle.trim().length < registrationRules.minProjectTitleLength
+    ) {
       errors.push({
         field: "projectTitle",
-        message: "Project title must be at least 5 characters",
+        message: `Project title must be at least ${registrationRules.minProjectTitleLength} characters`,
       });
     }
-    if (projectTitle && projectTitle.trim().length > 255) {
+    if (
+      projectTitle &&
+      projectTitle.trim().length > registrationRules.maxProjectTitleLength
+    ) {
       errors.push({
         field: "projectTitle",
-        message: "Project title must not exceed 255 characters",
+        message: `Project title must not exceed ${registrationRules.maxProjectTitleLength} characters`,
       });
     }
 
     // Validate number of students
-    if (!numberOfStudents || numberOfStudents < 1 || numberOfStudents > 6) {
+    if (
+      !numberOfStudents ||
+      numberOfStudents < 1 ||
+      numberOfStudents > registrationRules.maxStudentsPerProject
+    ) {
       errors.push({
         field: "numberOfStudents",
-        message: "Number of students must be between 1 and 6",
+        message: `Number of students must be between 1 and ${registrationRules.maxStudentsPerProject}`,
       });
     }
 
@@ -83,11 +98,11 @@ const createNewRegistration = async (req, res) => {
     if (
       !numberOfSupervisors ||
       numberOfSupervisors < 1 ||
-      numberOfSupervisors > 3
+      numberOfSupervisors > registrationRules.maxSupervisorsPerProject
     ) {
       errors.push({
         field: "numberOfSupervisors",
-        message: "Number of supervisors must be between 1 and 3",
+        message: `Number of supervisors must be between 1 and ${registrationRules.maxSupervisorsPerProject}`,
       });
     }
 
@@ -516,7 +531,6 @@ const updateStatus = async (req, res) => {
             projectId: result.project.id,
             teamId: result.projectTeam.id,
             usersCreated: result.userCredentials.length,
-            credentials: result.userCredentials, // Return credentials in response too
           },
         });
       } catch (approvalError) {

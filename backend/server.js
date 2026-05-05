@@ -66,6 +66,10 @@ app.use("/api", require("./routes/facultiesRoutes"));
 // project registration routes
 app.use("/api", require("./routes/registrationRoutes"));
 
+// Dashboard and system operations
+app.use("/api/dashboard", require("./routes/dashboardRoutes"));
+app.use("/api/admin", require("./routes/systemRoutes"));
+
 // Public API routes (no authentication required)
 app.use("/api", require("./routes/accelerationStatusRoutes"));
 app.use("/api", require("./routes/faqRoutes"));

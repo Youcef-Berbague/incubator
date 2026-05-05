@@ -9,10 +9,18 @@ const {
   deleteuser,
   getuser,
   getMe,
+  updateMe,
+  getMeProjects,
+  getMeRegistration,
+  getMeSummary,
   getAvailableRoles,
 } = require("../controllers/usersController");
 
 router.get("/me", getMe);
+router.get("/me/projects", getMeProjects);
+router.get("/me/registration", getMeRegistration);
+router.get("/me/summary", getMeSummary);
+router.patch("/me", updateMe);
 router.get(
   "/roles",
   verifyRoles(ROLES.admin, ROLES.superAdmin),

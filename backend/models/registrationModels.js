@@ -224,6 +224,64 @@ const checkDuplicateTitle = async (title, facultyId) => {
   return existing !== null;
 };
 
+const getRegistrationByParticipantEmail = async (email) => {
+  return await prisma.project_registrations.findFirst({
+    where: {
+      OR: [
+        {
+          registration_students: {
+            some: {
+              email,
+            },
+          },
+        },
+        {
+          registration_supervisors: {
+            some: {
+              email,
+            },
+          },
+        },
+      ],
+    },
+    include: {
+      faculties: {
+        select: {
+          id: true,
+          faculty_name: true,
+          faculty_name_en: true,
+        },
+      },
+      departements: {
+        select: {
+          id: true,
+          departement_name: true,
+          departement_name_en: true,
+        },
+      },
+      registration_students: {
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+          phone: true,
+          academic_level: true,
+        },
+      },
+      registration_supervisors: {
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+          phone: true,
+        },
+      },
+    },
+  });
+};
+
 /**
  * Generate random password (8 characters: letters + numbers)
  */
@@ -354,5 +412,6 @@ module.exports = {
   verifyFacultyExists,
   verifyDepartmentBelongsToFaculty,
   checkDuplicateTitle,
+  getRegistrationByParticipantEmail,
   createApprovedProject,
 };

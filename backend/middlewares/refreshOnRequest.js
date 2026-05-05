@@ -19,29 +19,7 @@ const {
 } = require("../utils/fingerprintUtils");
 const { sendTelegramAlert } = require("../config/notifier");
 const getRealIp = require("../utils/getRealIP");
-
-// 🧠 refresh configs
-const ROTATE_THRESHOLD_MS = parseInt(
-  process.env.ROTATE_THRESHOLD_MS || "86400000",
-  10,
-); // 24h
-
-const ROTATE_AFTER_N_REQUESTS = parseInt(
-  process.env.ROTATE_AFTER_N_REQUESTS || "50",
-  10,
-);
-
-const PROBABILISTIC_ROTATE_PERCENT = parseFloat(
-  process.env.PROB_ROTATE_PCT || "0",
-);
-
-const FINGERPRINT_MIN_SIMILARITY = parseFloat(
-  process.env.FINGERPRINT_MIN_SIMILARITY || "70",
-);
-
-const FINGERPRINT_SOFT_FAIL = String(
-  process.env.FINGERPRINT_SOFT_FAIL ?? "true",
-).toLowerCase() === "true";
+const { getSystemSettings } = require("../config/systemSettings");
 
 const getRefreshTokenTimeLeft = (token) => {
   try {
@@ -53,10 +31,26 @@ const getRefreshTokenTimeLeft = (token) => {
   }
 };
 
+const getSecuritySettings = async () => {
+  const settings = await getSystemSettings();
+  return {
+    rotateThresholdMs:
+      settings.security?.refreshRotationThresholdMs ?? 24 * 60 * 60 * 1000,
+    rotateAfterRequests: settings.security?.rotateAfterRequests ?? 50,
+    probabilisticRotatePercent:
+      settings.security?.probabilisticRotatePercent ?? 0,
+    fingerprintMinSimilarity:
+      settings.security?.fingerprintMinSimilarity ?? 70,
+    fingerprintSoftFail: settings.security?.fingerprintSoftFail ?? true,
+  };
+};
+
 const refreshOnRequest = (options = {}) => {
   return async (req, res, next) => {
     try {
       if (req.path?.startsWith("/api/auth/")) return next();
+
+      const securitySettings = await getSecuritySettings();
 
       const cookies = req.cookies;
       if (!cookies?.jwt) return next();
@@ -102,7 +96,7 @@ const refreshOnRequest = (options = {}) => {
         {},
       );
 
-      if (similarity < FINGERPRINT_MIN_SIMILARITY) {
+      if (similarity < securitySettings.fingerprintMinSimilarity) {
         await sendTelegramAlert(
           `🚨 محاولة استخدام Refresh Token من جهاز مختلف!\nuserId: ${
             tokenRecord.user_id
@@ -115,7 +109,7 @@ const refreshOnRequest = (options = {}) => {
           ua,
         );
 
-        if (!FINGERPRINT_SOFT_FAIL) {
+        if (!securitySettings.fingerprintSoftFail) {
           await deleteSingleRefreshToken(tokenRecord.uuid);
           clearCookie(res);
           return next();
@@ -176,10 +170,11 @@ const refreshOnRequest = (options = {}) => {
       // 🧩 المرحلة 7: احتساب الوقت المتبقي ودورات التحديث
       const timeLeftMs = getRefreshTokenTimeLeft(oldRefreshToken);
       const shouldRotateByTTL =
-        timeLeftMs !== null && timeLeftMs < ROTATE_THRESHOLD_MS;
+        timeLeftMs !== null && timeLeftMs < securitySettings.rotateThresholdMs;
       const shouldRotateByRequests =
-        tokenRecord.request_count >= ROTATE_AFTER_N_REQUESTS;
-      const shouldRotateByProb = Math.random() < PROBABILISTIC_ROTATE_PERCENT;
+        tokenRecord.request_count >= securitySettings.rotateAfterRequests;
+      const shouldRotateByProb =
+        Math.random() < securitySettings.probabilisticRotatePercent;
 
       // تحديث عداد الطلبات (لو موجود)
       await incrementRequestCount(tokenRecord.uuid);
