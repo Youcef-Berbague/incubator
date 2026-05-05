@@ -25,14 +25,9 @@ router.use(verifyJWT);
 
 /**
  * Protected routes - Require authentication
+ */
 router.get(
   "/registrations",
-  verifyRoles(ROLES.admin, ROLES.superAdmin),
-  getAll
-);
-router.get(
-  "/registrations",
-  verifyJWT,
   verifyRoles(ROLES.admin, ROLES.superAdmin),
   getAll
 );

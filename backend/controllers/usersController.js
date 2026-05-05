@@ -220,16 +220,34 @@ const deleteuser = async (req, res) => {
   const { id } = req.body;
 
   if (!id) return res.status(400).json({ message: "User ID is required." });
+  const parsedId = parseInt(id, 10);
+  if (Number.isNaN(parsedId)) {
+    return res.status(400).json({ message: "Invalid user ID." });
+  }
 
   try {
-    const deletedUser = await deleteUserByID(parseInt(id));
-    if (!deletedUser) {
-      return res.status(404).json({ message: `User ID ${id} not found.` });
+    if (req.id === parsedId) {
+      return res.status(400).json({
+        message: "You cannot delete your own account.",
+      });
     }
 
-    res.json({ message: `User ID ${id} deleted.` });
+    const deletedUser = await deleteUserByID(parsedId);
+    if (!deletedUser) {
+      return res.status(404).json({ message: `User ID ${parsedId} not found.` });
+    }
+
+    res.json({ success: true, message: `User ID ${parsedId} deleted.` });
   } catch (err) {
-    console.error(err);
+    console.error("Error deleting user:", err);
+
+    if (err.code === "P2003") {
+      return res.status(409).json({
+        message:
+          "Cannot delete this user because it is linked to other records. Reassign or remove related records first.",
+      });
+    }
+
     res.status(500).json({ message: "Error deleting user." });
   }
 };

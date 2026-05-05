@@ -69,7 +69,41 @@ const deleteUserByID = async (id) => {
   const existingUser = await prisma.users.findUnique({ where: { id } });
   if (!existingUser) return null;
 
-  return await prisma.users.delete({ where: { id } });
+  return await prisma.$transaction(async (tx) => {
+    // Remove jury assignments for this user first.
+    const juryMemberships = await tx.jury_membre.findMany({
+      where: { membre_id: id },
+      select: { id: true },
+    });
+    const juryMemberIds = juryMemberships.map((membership) => membership.id);
+
+    if (juryMemberIds.length > 0) {
+      await tx.jury_membres_relation.deleteMany({
+        where: { membre_id: { in: juryMemberIds } },
+      });
+
+      await tx.jury_membre.deleteMany({
+        where: { id: { in: juryMemberIds } },
+      });
+    }
+
+    // Remove project supervision links for this user.
+    await tx.supervising.deleteMany({
+      where: { supervisor_id: id },
+    });
+
+    // Remove training participation links for this user.
+    await tx.user_training.deleteMany({
+      where: { user_id: id },
+    });
+
+    // Remove refresh tokens explicitly (also cascades, kept for clarity).
+    await tx.refresh_tokens.deleteMany({
+      where: { user_id: id },
+    });
+
+    return tx.users.delete({ where: { id } });
+  });
 };
 
 const updateUserByID = async ({
