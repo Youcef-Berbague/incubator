@@ -19,8 +19,8 @@ router.get("/faqs/categories", getFAQCategories); // Public endpoint for categor
 router.get("/faqs", getAllFAQs); // Get all FAQs (with filters)
 router.get("/faqs/:id", getFAQById);
 
-
 router.use(verifyJWT);
+
 router.post("/faqs", verifyRoles(ROLES.superAdmin), createFAQ);
 router.put("/faqs/:id", verifyRoles(ROLES.superAdmin), updateFAQ);
 router.delete("/faqs/:id", verifyRoles(ROLES.superAdmin), deleteFAQ);

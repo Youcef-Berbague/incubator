@@ -13,6 +13,7 @@ const {
 // Socio-Economic Partner routes (public reads, SuperAdmin writes)
 router.get("/partners", getAllPartners);
 router.get("/partners/:id", getPartnerById);
+
 const verifyJWT = require("../middlewares/verifyJWT");
 
 router.use(verifyJWT);

@@ -16,6 +16,7 @@ router.get("/acceleration-statuses", getAllAccelerationStatuses);
 router.get("/acceleration-statuses/:id", getAccelerationStatusById);
 
 router.use(verifyJWT);
+
 router.post(
   "/acceleration-statuses",
   verifyRoles(ROLES.superAdmin),
