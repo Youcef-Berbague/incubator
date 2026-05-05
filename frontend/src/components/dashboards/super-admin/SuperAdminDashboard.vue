@@ -20,58 +20,53 @@ const recentRegistrations = ref([]);
 const loading = ref(false);
 const error = ref("");
 
+const normalizeRecentRegistrations = (items = []) => {
+  return items.map((item) => ({
+    id: item.id,
+    projectTitle: item.projectTitle || item.title || "Untitled Project",
+    status: item.status || "pending",
+    submittedAt: item.submittedAt || item.submitted_at || null,
+    faculty: item.faculty || null,
+    department: item.department || null,
+    numberOfStudents: item.numberOfStudents ?? 0,
+  }));
+};
+
 // Fetch dashboard data with retry mechanism for initial load
 const fetchDashboardData = async (retryCount = 0) => {
   loading.value = true;
   error.value = "";
 
   try {
-    // Fetch registrations statistics
-    const registrationsRes = await api.get("/registrations?page=1&limit=5");
+    // Prefer the consolidated dashboard endpoint from backend.
+    const summaryRes = await api.get("/dashboard/summary");
+    const summary = summaryRes.data?.data;
 
-    if (registrationsRes.data.success) {
-      const data = registrationsRes.data.data;
-      stats.value.totalRegistrations = data.pagination.total;
-      recentRegistrations.value = data.registrations;
-
-      // Calculate pending and approved from the registrations list
-      stats.value.pendingRegistrations = data.registrations.filter(
-        (r) => r.status === "pending"
-      ).length;
-      stats.value.approvedRegistrations = data.registrations.filter(
-        (r) => r.status === "approved"
-      ).length;
-
-      // Fetch all registrations for accurate counts
-      const allRegistrationsRes = await api.get("/registrations?limit=1000");
-
-      if (allRegistrationsRes.data.success) {
-        const allRegs = allRegistrationsRes.data.data.registrations;
-        stats.value.pendingRegistrations = allRegs.filter(
-          (r) => r.status === "pending"
-        ).length;
-        stats.value.approvedRegistrations = allRegs.filter(
-          (r) => r.status === "approved"
-        ).length;
+    if (summaryRes.data?.success && summary?.counts) {
+      stats.value.totalRegistrations = summary.counts.totalRegistrations || 0;
+      stats.value.pendingRegistrations = summary.counts.pendingRegistrations || 0;
+      stats.value.approvedRegistrations = summary.counts.approvedRegistrations || 0;
+      stats.value.totalUsers = summary.counts.totalUsers || 0;
+      recentRegistrations.value = normalizeRecentRegistrations(
+        summary.recentRegistrations || []
+      );
+    } else {
+      // Fallback to legacy endpoints when summary response is unavailable.
+      const registrationsRes = await api.get("/registrations?page=1&limit=5");
+      if (registrationsRes.data.success) {
+        const data = registrationsRes.data.data;
+        stats.value.totalRegistrations = data.pagination.total;
+        recentRegistrations.value = normalizeRecentRegistrations(data.registrations);
       }
-    }
 
-    // Fetch users count
-    try {
       const usersRes = await api.get("/users/all");
-
       if (usersRes.data.success) {
-        stats.value.totalUsers =
-          usersRes.data.total || usersRes.data.data.length;
+        stats.value.totalUsers = usersRes.data.total || usersRes.data.data.length;
       } else {
-        // Fallback if response structure is different
         stats.value.totalUsers = Array.isArray(usersRes.data)
           ? usersRes.data.length
           : 0;
       }
-    } catch (usersErr) {
-      console.error("Error fetching users count:", usersErr);
-      stats.value.totalUsers = 0;
     }
   } catch (err) {
     console.error("Error fetching dashboard data:", err);
