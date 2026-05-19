@@ -29,7 +29,7 @@ const getStatusColor = (project) =>
     </div>
 
     <div v-if="projects.length === 0" class="empty-state">
-      <span class="empty-icon">--</span>
+      <span class="empty-icon">📭</span>
       <p>No linked projects yet</p>
     </div>
 

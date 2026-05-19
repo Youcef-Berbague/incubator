@@ -652,7 +652,7 @@ onMounted(() => {
 }
 
 .student-dashboard .sidebar-icon {
-  font-size: 14px;
+  font-size: 20px;
   width: 36px;
   height: 36px;
   display: flex;
@@ -662,7 +662,6 @@ onMounted(() => {
   border-radius: 8px;
   flex-shrink: 0;
   transition: all 0.3s ease;
-  font-weight: 700;
   color: #2f6f4f;
 }
 
@@ -803,9 +802,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 24px;
   flex-shrink: 0;
-  font-weight: 700;
 }
 
 .student-dashboard .stat-content h3 {
@@ -885,10 +883,9 @@ onMounted(() => {
 }
 
 .student-dashboard .empty-icon {
-  font-size: 32px;
+  font-size: 48px;
   display: block;
   margin-bottom: 16px;
-  font-weight: 700;
   color: #b0b0b0;
 }
 

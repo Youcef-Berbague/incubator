@@ -10,7 +10,7 @@ const props = defineProps({
   <section class="stats-grid">
     <div class="stat-card">
       <div class="stat-icon" style="background: #e3f2fd">
-        <span style="color: #2196f3">PR</span>
+        <span style="color: #2196f3">📁</span>
       </div>
       <div class="stat-content">
         <h3>Linked Projects</h3>
@@ -21,7 +21,7 @@ const props = defineProps({
 
     <div class="stat-card">
       <div class="stat-icon" style="background: #fff3e0">
-        <span style="color: #ff9800">RG</span>
+        <span style="color: #ff9800">📝</span>
       </div>
       <div class="stat-content">
         <h3>Registration Status</h3>
@@ -32,7 +32,7 @@ const props = defineProps({
 
     <div class="stat-card">
       <div class="stat-icon" style="background: #e8f5e9">
-        <span style="color: #4caf50">AC</span>
+        <span style="color: #4caf50">🔐</span>
       </div>
       <div class="stat-content">
         <h3>Self Service</h3>
@@ -45,7 +45,7 @@ const props = defineProps({
 
     <div class="stat-card">
       <div class="stat-icon" style="background: #f3e5f5">
-        <span style="color: #9c27b0">RL</span>
+        <span style="color: #9c27b0">🎓</span>
       </div>
       <div class="stat-content">
         <h3>Role Snapshot</h3>

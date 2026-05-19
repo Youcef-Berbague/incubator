@@ -21,7 +21,7 @@ const goSection = (sectionId) => {
 
     <nav class="sidebar-nav">
       <button class="sidebar-item" @click="goSection('projects-section')">
-        <div class="sidebar-icon">PR</div>
+        <div class="sidebar-icon">📁</div>
         <div class="sidebar-content">
           <h4>Projects</h4>
           <p>
@@ -31,7 +31,7 @@ const goSection = (sectionId) => {
       </button>
 
       <button class="sidebar-item" @click="goSection('registration-section')">
-        <div class="sidebar-icon">RG</div>
+        <div class="sidebar-icon">📝</div>
         <div class="sidebar-content">
           <h4>Registration</h4>
           <p>{{ registrationStatusLabel }}</p>
@@ -39,7 +39,7 @@ const goSection = (sectionId) => {
       </button>
 
       <button class="sidebar-item" @click="goSection('access-section')">
-        <div class="sidebar-icon">AC</div>
+        <div class="sidebar-icon">🔐</div>
         <div class="sidebar-content">
           <h4>Access</h4>
           <p>View permissions</p>
@@ -47,7 +47,7 @@ const goSection = (sectionId) => {
       </button>
 
       <button class="sidebar-item" @click="goSection('profile-section')">
-        <div class="sidebar-icon">PF</div>
+        <div class="sidebar-icon">👤</div>
         <div class="sidebar-content">
           <h4>Profile</h4>
           <p>Account snapshot</p>
@@ -58,7 +58,7 @@ const goSection = (sectionId) => {
       <div class="sidebar-section-title">Account</div>
 
       <button class="sidebar-item" @click="emit('account')">
-        <div class="sidebar-icon">MY</div>
+        <div class="sidebar-icon">⚙️</div>
         <div class="sidebar-content">
           <h4>My Account</h4>
           <p>Update settings</p>
@@ -66,7 +66,7 @@ const goSection = (sectionId) => {
       </button>
 
       <button class="sidebar-item" @click="emit('refresh')">
-        <div class="sidebar-icon">RF</div>
+        <div class="sidebar-icon">🔄</div>
         <div class="sidebar-content">
           <h4>Refresh</h4>
           <p>Sync latest data</p>
@@ -74,7 +74,7 @@ const goSection = (sectionId) => {
       </button>
 
       <button class="sidebar-item" @click="emit('home')">
-        <div class="sidebar-icon">HM</div>
+        <div class="sidebar-icon">🏠</div>
         <div class="sidebar-content">
           <h4>Home</h4>
           <p>Return to website</p>

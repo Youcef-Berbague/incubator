@@ -31,7 +31,7 @@ const getStatusColor = (status) => statusColors[status] || "#666";
     </div>
 
     <div v-if="!registration" class="empty-state">
-      <span class="empty-icon">--</span>
+      <span class="empty-icon">📭</span>
       <p>No registration found</p>
     </div>
 
