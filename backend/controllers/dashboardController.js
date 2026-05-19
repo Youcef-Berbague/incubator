@@ -64,6 +64,25 @@ const buildAdminSummary = async () => {
         title: true,
         status: true,
         submitted_at: true,
+        faculties: {
+          select: {
+            id: true,
+            faculty_name: true,
+            faculty_name_en: true,
+          },
+        },
+        departements: {
+          select: {
+            id: true,
+            departement_name: true,
+            departement_name_en: true,
+          },
+        },
+        _count: {
+          select: {
+            registration_students: true,
+          },
+        },
       },
     }),
   ]);
@@ -85,7 +104,27 @@ const buildAdminSummary = async () => {
       totalFAQs,
     },
     recentProjects,
-    recentRegistrations,
+    recentRegistrations: recentRegistrations.map((registration) => ({
+      id: registration.id,
+      projectTitle: registration.title,
+      status: registration.status,
+      submittedAt: registration.submitted_at,
+      faculty: registration.faculties
+        ? {
+            id: registration.faculties.id,
+            name: registration.faculties.faculty_name,
+            nameEn: registration.faculties.faculty_name_en,
+          }
+        : null,
+      department: registration.departements
+        ? {
+            id: registration.departements.id,
+            name: registration.departements.departement_name,
+            nameEn: registration.departements.departement_name_en,
+          }
+        : null,
+      numberOfStudents: registration._count?.registration_students ?? 0,
+    })),
   };
 };
 

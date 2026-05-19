@@ -197,7 +197,16 @@ const updateStatus = async () => {
     if (response.data.success) {
       // Check if project was created (approval)
       if (response.data.data.projectId) {
-        successMessage.value = `Registration approved! Project created with ID: ${response.data.data.projectId}. ${response.data.data.usersCreated} users created.`;
+        const accountsCreated =
+          response.data?.data?.accountsCreated ??
+          response.data?.data?.usersCreated ??
+          0;
+        const accountsReused = response.data?.data?.accountsReused ?? 0;
+        successMessage.value = `Registration approved! Project created with ID: ${
+          response.data.data.projectId
+        }. ${accountsCreated} new user(s) created${
+          accountsReused ? `, ${accountsReused} existing account(s) reused` : ""
+        }.`;
       } else {
         successMessage.value = "Registration status updated successfully";
       }

@@ -15,7 +15,8 @@ const {
 } = require("../models/registrationModels");
 const { sendTelegramAlert } = require("../config/notifier");
 const { readSettingsFile } = require("../config/systemSettings");
-const { getUserByID } = require("../models/UsersModels");
+const { getUserByID, updateUserByID } = require("../models/UsersModels");
+const jwt = require("jsonwebtoken");
 
 /**
  * Validate email format
@@ -41,6 +42,90 @@ const isValidName = (name) => {
   if (!name || name.length < 2 || name.length > 100) return false;
   const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]+$/;
   return nameRegex.test(name);
+};
+
+const sanitizePhoneForUserProfile = (phone) => {
+  if (!phone) return null;
+  const cleaned = String(phone).replace(/\s+/g, "").trim();
+  if (!cleaned) return null;
+  if (cleaned.length !== 10) return null;
+  return cleaned;
+};
+
+const resolveAuthenticatedUserFromRequest = async (req) => {
+  if (req.id) {
+    return await getUserByID(req.id);
+  }
+
+  const accessToken = req.accessToken;
+  if (!accessToken) return null;
+
+  try {
+    const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+    const userId = decoded?.userInfos?.userId;
+    if (!userId) return null;
+    return await getUserByID(userId);
+  } catch {
+    return null;
+  }
+};
+
+const syncFirstStudentWithProfile = async (req, students = []) => {
+  if (!Array.isArray(students) || students.length === 0) {
+    return { students, user: null };
+  }
+
+  const user = await resolveAuthenticatedUserFromRequest(req);
+  if (!user) {
+    return { students, user: null };
+  }
+
+  const updatedStudents = [...students];
+  const firstStudent = { ...(updatedStudents[0] || {}) };
+
+  // Keep the first student tied to the authenticated account.
+  firstStudent.email = user.email;
+  if (!firstStudent.firstName?.trim()) firstStudent.firstName = user.first_name;
+  if (!firstStudent.lastName?.trim()) firstStudent.lastName = user.last_name;
+  if (!firstStudent.academicLevel?.trim() && user.academic_level) {
+    firstStudent.academicLevel = user.academic_level;
+  }
+  if (!firstStudent.phone?.trim() && user.phone_number) {
+    firstStudent.phone = user.phone_number;
+  }
+
+  updatedStudents[0] = firstStudent;
+
+  const nextFirstName = firstStudent.firstName?.trim() || user.first_name;
+  const nextLastName = firstStudent.lastName?.trim() || user.last_name;
+  const nextAcademicLevel = firstStudent.academicLevel?.trim() || null;
+  const nextPhoneForProfile = sanitizePhoneForUserProfile(firstStudent.phone);
+
+  const updatePayload = { id: user.id };
+  let hasChanges = false;
+
+  if (nextFirstName && nextFirstName !== user.first_name) {
+    updatePayload.first_name = nextFirstName;
+    hasChanges = true;
+  }
+  if (nextLastName && nextLastName !== user.last_name) {
+    updatePayload.last_name = nextLastName;
+    hasChanges = true;
+  }
+  if ((nextAcademicLevel || null) !== (user.academic_level || null)) {
+    updatePayload.academic_level = nextAcademicLevel;
+    hasChanges = true;
+  }
+  if (nextPhoneForProfile && nextPhoneForProfile !== user.phone_number) {
+    updatePayload.phone_number = nextPhoneForProfile;
+    hasChanges = true;
+  }
+
+  if (hasChanges) {
+    await updateUserByID(updatePayload);
+  }
+
+  return { students: updatedStudents, user };
 };
 
 const buildRegistrationValidationErrors = (payload, registrationRules) => {
@@ -234,9 +319,11 @@ const createNewRegistration = async (req, res) => {
       numberOfSupervisors,
       facultyId,
       departmentId,
-      students,
+      students: studentsInput,
       supervisors,
     } = req.body;
+
+    const { students } = await syncFirstStudentWithProfile(req, studentsInput);
 
     const settings = await readSettingsFile();
     const registrationRules = settings.registration;
@@ -354,7 +441,7 @@ const updateMyRegistration = async (req, res) => {
       numberOfSupervisors,
       facultyId,
       departmentId,
-      students,
+      students: studentsInput,
       supervisors,
     } = req.body;
 
@@ -386,6 +473,8 @@ const updateMyRegistration = async (req, res) => {
 
     const settings = await readSettingsFile();
     const registrationRules = settings.registration;
+
+    const { students } = await syncFirstStudentWithProfile(req, studentsInput);
 
     const errors = buildRegistrationValidationErrors(
       {
@@ -742,14 +831,26 @@ const updateStatus = async (req, res) => {
         notificationMessage += `*Project:* ${existingRegistration.title}\n`;
         notificationMessage += `*Project ID:* ${result.project.id}\n`;
         notificationMessage += `*Team ID:* ${result.projectTeam.id}\n\n`;
-        notificationMessage += `*User Credentials Created:*\n\n`;
+        notificationMessage += `*User Accounts Processed:*\n\n`;
+
+        const createdAccounts = result.userCredentials.filter(
+          (cred) => cred.accountStatus === "created",
+        ).length;
+        const reusedAccounts = result.userCredentials.filter(
+          (cred) => cred.accountStatus === "reused",
+        ).length;
 
         result.userCredentials.forEach((cred, index) => {
           notificationMessage += `${index + 1}\\. *${cred.type}:* ${
             cred.name
           }\n`;
           notificationMessage += `   📧 Email: ${cred.email}\n`;
-          notificationMessage += `   🔑 Password: \`${cred.password}\`\n\n`;
+          if (cred.password) {
+            notificationMessage += `   🔑 Password: \`${cred.password}\`\n`;
+            notificationMessage += `   🆕 Account: Created\n\n`;
+          } else {
+            notificationMessage += `   ♻️ Account: Reused existing account\n\n`;
+          }
         });
 
         notificationMessage += `⚠️ *Important:* These passwords are shown only once\\. Please save them securely\\.\n`;
@@ -765,7 +866,9 @@ const updateStatus = async (req, res) => {
             status: updatedRegistration.status,
             projectId: result.project.id,
             teamId: result.projectTeam.id,
-            usersCreated: result.userCredentials.length,
+            accountsProcessed: result.userCredentials.length,
+            accountsCreated: createdAccounts,
+            accountsReused: reusedAccounts,
           },
         });
       } catch (approvalError) {

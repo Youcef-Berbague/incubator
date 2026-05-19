@@ -366,6 +366,47 @@ const generateRandomPassword = () => {
   return password;
 };
 
+const normalizePhone = (phone) => {
+  if (!phone) return null;
+  const cleaned = String(phone).replace(/\s+/g, "").trim();
+  if (cleaned.length !== 10) return null;
+  return cleaned;
+};
+
+const ensureRole = (existingRoles = [], roleToAdd) => {
+  const roles = Array.isArray(existingRoles) ? [...existingRoles] : [];
+  if (!roles.includes(roleToAdd)) roles.push(roleToAdd);
+  return roles;
+};
+
+const generateUniquePhoneNumber = async (tx, preferredPhone = null, excludeUserId = null) => {
+  const preferred = normalizePhone(preferredPhone);
+  if (preferred) {
+    const phoneOwner = await tx.users.findUnique({
+      where: { phone_number: preferred },
+      select: { id: true },
+    });
+    if (!phoneOwner || phoneOwner.id === excludeUserId) {
+      return preferred;
+    }
+  }
+
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const generated = `05${Math.floor(Math.random() * 100000000)
+      .toString()
+      .padStart(8, "0")}`;
+    const phoneOwner = await tx.users.findUnique({
+      where: { phone_number: generated },
+      select: { id: true },
+    });
+    if (!phoneOwner || phoneOwner.id === excludeUserId) {
+      return generated;
+    }
+  }
+
+  throw new Error("Unable to generate a unique phone number.");
+};
+
 /**
  * Create approved project with all relationships
  * - Creates project in project table
@@ -404,66 +445,166 @@ const createApprovedProject = async (registrationId) => {
       },
     });
 
-    // 3. Create users for students and link to team
+    // 3. Create/reuse users for students and link to team
     for (const student of registration.registration_students) {
-      const plainPassword = generateRandomPassword();
-      const hashedPassword = await bcrypt.hash(plainPassword, 10);
+      if (!student.email) {
+        throw new Error("Student email is required to approve registration.");
+      }
 
-      const user = await tx.users.create({
-        data: {
-          first_name: student.first_name,
-          last_name: student.last_name,
-          email: student.email,
-          phone_number:
-            student.phone || `05${Math.floor(Math.random() * 100000000)}`,
-          password: hashedPassword,
-          role: [ROLES.student],
-          academic_level: student.academic_level,
-          p_team_id: projectTeam.id, // Link student to team
-          status: "active",
+      const existingUser = await tx.users.findUnique({
+        where: { email: student.email },
+        select: {
+          id: true,
+          role: true,
+          phone_number: true,
+          first_name: true,
+          last_name: true,
+          academic_level: true,
         },
       });
 
-      userCredentials.push({
-        type: "Student",
-        name: `${student.first_name} ${student.last_name}`,
-        email: student.email,
-        password: plainPassword,
-      });
+      if (existingUser) {
+        const nextPhone = await generateUniquePhoneNumber(
+          tx,
+          student.phone,
+          existingUser.id,
+        );
+
+        await tx.users.update({
+          where: { id: existingUser.id },
+          data: {
+            first_name: student.first_name || existingUser.first_name,
+            last_name: student.last_name || existingUser.last_name,
+            academic_level: student.academic_level || existingUser.academic_level,
+            role: ensureRole(existingUser.role, ROLES.student),
+            p_team_id: projectTeam.id,
+            phone_number: nextPhone,
+            status: "active",
+          },
+        });
+
+        userCredentials.push({
+          type: "Student",
+          name: `${student.first_name} ${student.last_name}`,
+          email: student.email,
+          password: null,
+          accountStatus: "reused",
+        });
+      } else {
+        const plainPassword = generateRandomPassword();
+        const hashedPassword = await bcrypt.hash(plainPassword, 10);
+        const phoneNumber = await generateUniquePhoneNumber(tx, student.phone);
+
+        await tx.users.create({
+          data: {
+            first_name: student.first_name,
+            last_name: student.last_name,
+            email: student.email,
+            phone_number: phoneNumber,
+            password: hashedPassword,
+            role: [ROLES.student],
+            academic_level: student.academic_level,
+            p_team_id: projectTeam.id,
+            status: "active",
+          },
+        });
+
+        userCredentials.push({
+          type: "Student",
+          name: `${student.first_name} ${student.last_name}`,
+          email: student.email,
+          password: plainPassword,
+          accountStatus: "created",
+        });
+      }
     }
 
-    // 4. Create users for supervisors and link via supervising table
+    // 4. Create/reuse users for supervisors and link via supervising table
     for (const supervisor of registration.registration_supervisors) {
-      const plainPassword = generateRandomPassword();
-      const hashedPassword = await bcrypt.hash(plainPassword, 10);
+      if (!supervisor.email) {
+        throw new Error("Supervisor email is required to approve registration.");
+      }
 
-      const user = await tx.users.create({
-        data: {
-          first_name: supervisor.first_name,
-          last_name: supervisor.last_name,
-          email: supervisor.email,
-          phone_number:
-            supervisor.phone || `05${Math.floor(Math.random() * 100000000)}`,
-          password: hashedPassword,
-          role: [ROLES.supervisor],
-          departement_id: registration.departements?.id || null,
-          status: "active",
+      const existingUser = await tx.users.findUnique({
+        where: { email: supervisor.email },
+        select: {
+          id: true,
+          role: true,
+          phone_number: true,
+          first_name: true,
+          last_name: true,
+          departement_id: true,
         },
       });
+
+      let supervisorUserId = null;
+
+      if (existingUser) {
+        const nextPhone = await generateUniquePhoneNumber(
+          tx,
+          supervisor.phone,
+          existingUser.id,
+        );
+
+        const updatedSupervisor = await tx.users.update({
+          where: { id: existingUser.id },
+          data: {
+            first_name: supervisor.first_name || existingUser.first_name,
+            last_name: supervisor.last_name || existingUser.last_name,
+            role: ensureRole(existingUser.role, ROLES.supervisor),
+            phone_number: nextPhone,
+            departement_id:
+              registration.departements?.id || existingUser.departement_id,
+            status: "active",
+          },
+          select: { id: true },
+        });
+
+        supervisorUserId = updatedSupervisor.id;
+
+        userCredentials.push({
+          type: "Supervisor",
+          name: `${supervisor.first_name} ${supervisor.last_name}`,
+          email: supervisor.email,
+          password: null,
+          accountStatus: "reused",
+        });
+      } else {
+        const plainPassword = generateRandomPassword();
+        const hashedPassword = await bcrypt.hash(plainPassword, 10);
+        const phoneNumber = await generateUniquePhoneNumber(tx, supervisor.phone);
+
+        const createdSupervisor = await tx.users.create({
+          data: {
+            first_name: supervisor.first_name,
+            last_name: supervisor.last_name,
+            email: supervisor.email,
+            phone_number: phoneNumber,
+            password: hashedPassword,
+            role: [ROLES.supervisor],
+            departement_id: registration.departements?.id || null,
+            status: "active",
+          },
+          select: { id: true },
+        });
+
+        supervisorUserId = createdSupervisor.id;
+
+        userCredentials.push({
+          type: "Supervisor",
+          name: `${supervisor.first_name} ${supervisor.last_name}`,
+          email: supervisor.email,
+          password: plainPassword,
+          accountStatus: "created",
+        });
+      }
 
       // Link supervisor to project via supervising table
       await tx.supervising.create({
         data: {
           project_id: project.id,
-          supervisor_id: user.id,
+          supervisor_id: supervisorUserId,
         },
-      });
-
-      userCredentials.push({
-        type: "Supervisor",
-        name: `${supervisor.first_name} ${supervisor.last_name}`,
-        email: supervisor.email,
-        password: plainPassword,
       });
     }
 

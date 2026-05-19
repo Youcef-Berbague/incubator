@@ -26,9 +26,30 @@ const normalizeRecentRegistrations = (items = []) => {
     projectTitle: item.projectTitle || item.title || "Untitled Project",
     status: item.status || "pending",
     submittedAt: item.submittedAt || item.submitted_at || null,
-    faculty: item.faculty || null,
-    department: item.department || null,
-    numberOfStudents: item.numberOfStudents ?? 0,
+    faculty: item.faculty
+      ? item.faculty
+      : item.faculties
+      ? {
+          id: item.faculties.id,
+          name: item.faculties.faculty_name,
+          nameEn: item.faculties.faculty_name_en,
+        }
+      : null,
+    department: item.department
+      ? item.department
+      : item.departements
+      ? {
+          id: item.departements.id,
+          name: item.departements.departement_name,
+          nameEn: item.departements.departement_name_en,
+        }
+      : null,
+    numberOfStudents:
+      item.numberOfStudents ??
+      item._count?.registration_students ??
+      (Array.isArray(item.registration_students)
+        ? item.registration_students.length
+        : 0),
   }));
 };
 

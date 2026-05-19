@@ -91,8 +91,7 @@ const updateUserInfo = async () => {
       return;
     }
 
-    const response = await api.put("/users/update", {
-      id: userData.value.id,
+    const response = await api.patch("/users/me", {
       first_name: userData.value.first_name,
       last_name: userData.value.last_name,
       email: userData.value.email,
@@ -162,8 +161,7 @@ const changePassword = async () => {
 
     // Note: You'll need to create a separate endpoint for password verification
     // For now, we'll just update the password
-    const response = await api.put("/users/update", {
-      id: userData.value.id,
+    const response = await api.patch("/users/me", {
       password: passwordForm.value.newPassword,
     });
 
