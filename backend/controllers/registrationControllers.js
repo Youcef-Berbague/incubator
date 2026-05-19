@@ -770,6 +770,7 @@ const updateStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status, reviewerNotes } = req.body;
+    const terminalStatuses = ["approved", "rejected"];
 
     // Validate status
     const validStatuses = [
@@ -801,6 +802,19 @@ const updateStatus = async (req, res) => {
         success: false,
         message: "Registration not found",
         error: `Registration with ID ${id} does not exist`,
+      });
+    }
+
+    // Once a registration is approved/rejected, lock status transitions.
+    if (
+      terminalStatuses.includes(existingRegistration.status) &&
+      status !== existingRegistration.status
+    ) {
+      return res.status(409).json({
+        success: false,
+        message: "Status is locked",
+        error:
+          "This registration is already finalized (approved/rejected) and cannot be modified.",
       });
     }
 

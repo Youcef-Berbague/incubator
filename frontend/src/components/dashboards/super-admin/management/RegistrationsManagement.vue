@@ -55,6 +55,9 @@ const statusOptions = [
   { value: "revision_required", label: "Revision Required" },
 ];
 
+const isFinalizedStatus = (status) =>
+  status === "approved" || status === "rejected";
+
 const showStatusActionPopup = (type, title, message) => {
   actionPopupType.value = type;
   actionPopupTitle.value = title;
@@ -186,6 +189,14 @@ const deleteRegistration = async () => {
 
 // Open status update modal
 const openStatusModal = (registration) => {
+  if (isFinalizedStatus(registration?.status)) {
+    showStatusActionPopup(
+      "error",
+      "Status Locked",
+      "This registration is finalized (approved/rejected) and cannot be modified."
+    );
+    return;
+  }
   registrationToUpdate.value = registration;
   newStatus.value = registration.status;
   reviewerNotes.value = "";
@@ -471,7 +482,12 @@ onMounted(() => {
                   <button
                     class="btn-icon btn-edit"
                     @click="openStatusModal(registration)"
-                    title="Update Status"
+                    :disabled="isFinalizedStatus(registration.status)"
+                    :title="
+                      isFinalizedStatus(registration.status)
+                        ? 'Status locked after approval/rejection'
+                        : 'Update Status'
+                    "
                   >
                     ✏️
                   </button>
@@ -668,6 +684,7 @@ onMounted(() => {
           </button>
           <button
             class="btn-primary"
+            :disabled="isFinalizedStatus(selectedRegistration?.status)"
             @click="
               closeDetailsModal();
               openStatusModal(selectedRegistration);
@@ -1119,6 +1136,12 @@ tr:hover {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.btn-icon:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn-view {
