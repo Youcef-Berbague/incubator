@@ -36,6 +36,10 @@ const selectedRegistration = ref(null);
 const showDetailsModal = ref(false);
 const showDeleteModal = ref(false);
 const showStatusModal = ref(false);
+const showActionPopup = ref(false);
+const actionPopupType = ref("success");
+const actionPopupTitle = ref("");
+const actionPopupMessage = ref("");
 const registrationToDelete = ref(null);
 const registrationToUpdate = ref(null);
 const newStatus = ref("");
@@ -49,8 +53,18 @@ const statusOptions = [
   { value: "approved", label: "Approved" },
   { value: "rejected", label: "Rejected" },
   { value: "revision_required", label: "Revision Required" },
-  { value: "withdrawn", label: "Withdrawn" },
 ];
+
+const showStatusActionPopup = (type, title, message) => {
+  actionPopupType.value = type;
+  actionPopupTitle.value = title;
+  actionPopupMessage.value = message;
+  showActionPopup.value = true;
+};
+
+const closeActionPopup = () => {
+  showActionPopup.value = false;
+};
 
 // Fetch registrations
 const fetchRegistrations = async () => {
@@ -211,6 +225,12 @@ const updateStatus = async () => {
         successMessage.value = "Registration status updated successfully";
       }
 
+      showStatusActionPopup(
+        "success",
+        "Status Updated",
+        response.data?.message || "Registration status updated successfully."
+      );
+
       showStatusModal.value = false;
       registrationToUpdate.value = null;
       newStatus.value = "";
@@ -223,9 +243,10 @@ const updateStatus = async () => {
     }
   } catch (err) {
     console.error("Error updating status:", err);
-    error.value =
+    const errorMessage =
       err.response?.data?.message || "Failed to update registration status.";
-    showStatusModal.value = false;
+    error.value = errorMessage;
+    showStatusActionPopup("error", "Update Failed", errorMessage);
   } finally {
     loading.value = false;
   }
@@ -266,7 +287,6 @@ const getStatusColor = (status) => {
     approved: "#10b981",
     rejected: "#ef4444",
     revision_required: "#8b5cf6",
-    withdrawn: "#6b7280",
   };
   return colors[status] || "#666";
 };
@@ -763,6 +783,24 @@ onMounted(() => {
             Update Status
           </button>
         </div>
+      </div>
+    </div>
+
+    <div
+      v-if="showActionPopup"
+      class="modal-overlay feedback-overlay"
+      @click="closeActionPopup"
+    >
+      <div class="feedback-modal" @click.stop>
+        <div
+          class="feedback-icon"
+          :class="actionPopupType === 'success' ? 'success' : 'error'"
+        >
+          {{ actionPopupType === "success" ? "✓" : "!" }}
+        </div>
+        <h3>{{ actionPopupTitle }}</h3>
+        <p>{{ actionPopupMessage }}</p>
+        <button class="btn-primary" @click="closeActionPopup">OK</button>
       </div>
     </div>
   </div>
@@ -1457,6 +1495,56 @@ tr:hover {
 
 .btn-danger:hover {
   background: #cc0000;
+}
+
+.feedback-overlay {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.feedback-modal {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px;
+  max-width: 420px;
+  width: 92%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  display: grid;
+  gap: 10px;
+}
+
+.feedback-modal h3 {
+  margin: 0;
+  font-size: 20px;
+  color: #1a1a1a;
+}
+
+.feedback-modal p {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.feedback-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  margin: 0 auto 2px;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.feedback-icon.success {
+  background: #e8f8ee;
+  color: #0c7a43;
+}
+
+.feedback-icon.error {
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 /* Responsive */

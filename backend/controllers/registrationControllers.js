@@ -778,7 +778,6 @@ const updateStatus = async (req, res) => {
       "approved",
       "rejected",
       "revision_required",
-      "withdrawn",
     ];
     if (!status || !validStatuses.includes(status)) {
       return res.status(400).json({
@@ -805,12 +804,15 @@ const updateStatus = async (req, res) => {
       });
     }
 
-    // Prevent re-approval of already approved registrations
-    if (status === "approved" && existingRegistration.status === "approved") {
-      return res.status(400).json({
-        success: false,
-        message: "Registration is already approved",
-        error: "Cannot approve an already approved registration",
+    if (status === existingRegistration.status) {
+      return res.json({
+        success: true,
+        message: "Registration status is already set to the selected value",
+        data: {
+          id: existingRegistration.id,
+          status: existingRegistration.status,
+          unchanged: true,
+        },
       });
     }
 
