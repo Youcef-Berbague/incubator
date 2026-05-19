@@ -4,6 +4,7 @@ const router = express.Router();
 const { registerLimiter } = require("../config/limiterConfig");
 const {
   createNewRegistration,
+  updateMyRegistration,
   getAll,
   getOne,
   updateStatus,
@@ -22,6 +23,16 @@ router.post("/projects/register", registerLimiter, createNewRegistration);
 
 // Apply JWT verification to all routes below (protected routes)
 router.use(verifyJWT);
+
+/**
+ * Student update route - Modify registration before approval
+ * PATCH /api/projects/register
+ */
+router.patch(
+  "/projects/register",
+  verifyRoles(ROLES.student),
+  updateMyRegistration
+);
 
 /**
  * Protected routes - Require authentication

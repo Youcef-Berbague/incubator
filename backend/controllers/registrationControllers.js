@@ -8,11 +8,14 @@ const {
   verifyFacultyExists,
   verifyDepartmentBelongsToFaculty,
   checkDuplicateTitle,
+  findActiveRegistrationByStudentEmails,
   createApprovedProject,
   getRegistrationByParticipantEmail,
+  updateRegistrationDetails,
 } = require("../models/registrationModels");
 const { sendTelegramAlert } = require("../config/notifier");
 const { readSettingsFile } = require("../config/systemSettings");
+const { getUserByID } = require("../models/UsersModels");
 
 /**
  * Validate email format
@@ -40,6 +43,185 @@ const isValidName = (name) => {
   return nameRegex.test(name);
 };
 
+const buildRegistrationValidationErrors = (payload, registrationRules) => {
+  const {
+    projectTitle,
+    numberOfStudents,
+    numberOfSupervisors,
+    facultyId,
+    departmentId,
+    students,
+    supervisors,
+  } = payload;
+
+  const errors = [];
+
+  if (
+    !projectTitle ||
+    projectTitle.trim().length < registrationRules.minProjectTitleLength
+  ) {
+    errors.push({
+      field: "projectTitle",
+      message: `Project title must be at least ${registrationRules.minProjectTitleLength} characters`,
+    });
+  }
+  if (
+    projectTitle &&
+    projectTitle.trim().length > registrationRules.maxProjectTitleLength
+  ) {
+    errors.push({
+      field: "projectTitle",
+      message: `Project title must not exceed ${registrationRules.maxProjectTitleLength} characters`,
+    });
+  }
+
+  if (
+    !numberOfStudents ||
+    numberOfStudents < 1 ||
+    numberOfStudents > registrationRules.maxStudentsPerProject
+  ) {
+    errors.push({
+      field: "numberOfStudents",
+      message: `Number of students must be between 1 and ${registrationRules.maxStudentsPerProject}`,
+    });
+  }
+
+  if (
+    !numberOfSupervisors ||
+    numberOfSupervisors < 1 ||
+    numberOfSupervisors > registrationRules.maxSupervisorsPerProject
+  ) {
+    errors.push({
+      field: "numberOfSupervisors",
+      message: `Number of supervisors must be between 1 and ${registrationRules.maxSupervisorsPerProject}`,
+    });
+  }
+
+  if (!students || students.length !== numberOfStudents) {
+    errors.push({
+      field: "students",
+      message: "Students array length must match numberOfStudents",
+    });
+  }
+
+  if (!supervisors || supervisors.length !== numberOfSupervisors) {
+    errors.push({
+      field: "supervisors",
+      message: "Supervisors array length must match numberOfSupervisors",
+    });
+  }
+
+  if (!facultyId) {
+    errors.push({
+      field: "facultyId",
+      message: "Faculty ID is required",
+    });
+  }
+
+  if (!departmentId) {
+    errors.push({
+      field: "departmentId",
+      message: "Department ID is required",
+    });
+  }
+
+  if (students && Array.isArray(students)) {
+    students.forEach((student, index) => {
+      if (!student.firstName || !isValidName(student.firstName)) {
+        errors.push({
+          field: `students[${index}].firstName`,
+          message: "Invalid first name (2-100 letters only)",
+        });
+      }
+      if (!student.lastName || !isValidName(student.lastName)) {
+        errors.push({
+          field: `students[${index}].lastName`,
+          message: "Invalid last name (2-100 letters only)",
+        });
+      }
+      if (!student.email) {
+        errors.push({
+          field: `students[${index}].email`,
+          message: "Email is required",
+        });
+      } else if (!isValidEmail(student.email)) {
+        errors.push({
+          field: `students[${index}].email`,
+          message: "Invalid email format",
+        });
+      }
+      if (!student.academicLevel) {
+        errors.push({
+          field: `students[${index}].academicLevel`,
+          message: "Academic level is required",
+        });
+      } else if (!isValidAcademicLevel(student.academicLevel)) {
+        errors.push({
+          field: `students[${index}].academicLevel`,
+          message:
+            "Invalid academic level (must be L1, L2, L3, M1, M2, or PhD)",
+        });
+      }
+    });
+
+    const studentEmails = students.map((s) => s.email).filter((e) => e);
+    const duplicateStudentEmails = studentEmails.filter(
+      (email, index) => studentEmails.indexOf(email) !== index
+    );
+    if (duplicateStudentEmails.length > 0) {
+      errors.push({
+        field: "students",
+        message: `Duplicate student emails found: ${duplicateStudentEmails.join(
+          ", "
+        )}`,
+      });
+    }
+  }
+
+  if (supervisors && Array.isArray(supervisors)) {
+    supervisors.forEach((supervisor, index) => {
+      if (!supervisor.firstName || !isValidName(supervisor.firstName)) {
+        errors.push({
+          field: `supervisors[${index}].firstName`,
+          message: "Invalid first name (2-100 letters only)",
+        });
+      }
+      if (!supervisor.lastName || !isValidName(supervisor.lastName)) {
+        errors.push({
+          field: `supervisors[${index}].lastName`,
+          message: "Invalid last name (2-100 letters only)",
+        });
+      }
+      if (!supervisor.email) {
+        errors.push({
+          field: `supervisors[${index}].email`,
+          message: "Email is required",
+        });
+      } else if (!isValidEmail(supervisor.email)) {
+        errors.push({
+          field: `supervisors[${index}].email`,
+          message: "Invalid email format",
+        });
+      }
+    });
+
+    const supervisorEmails = supervisors.map((s) => s.email).filter((e) => e);
+    const duplicateSupervisorEmails = supervisorEmails.filter(
+      (email, index) => supervisorEmails.indexOf(email) !== index
+    );
+    if (duplicateSupervisorEmails.length > 0) {
+      errors.push({
+        field: "supervisors",
+        message: `Duplicate supervisor emails found: ${duplicateSupervisorEmails.join(
+          ", "
+        )}`,
+      });
+    }
+  }
+
+  return errors;
+};
+
 /**
  * Create new project registration
  * POST /api/projects/register
@@ -59,181 +241,18 @@ const createNewRegistration = async (req, res) => {
     const settings = await readSettingsFile();
     const registrationRules = settings.registration;
 
-    // Validation errors array
-    const errors = [];
-
-    // Validate project title
-    if (
-      !projectTitle ||
-      projectTitle.trim().length < registrationRules.minProjectTitleLength
-    ) {
-      errors.push({
-        field: "projectTitle",
-        message: `Project title must be at least ${registrationRules.minProjectTitleLength} characters`,
-      });
-    }
-    if (
-      projectTitle &&
-      projectTitle.trim().length > registrationRules.maxProjectTitleLength
-    ) {
-      errors.push({
-        field: "projectTitle",
-        message: `Project title must not exceed ${registrationRules.maxProjectTitleLength} characters`,
-      });
-    }
-
-    // Validate number of students
-    if (
-      !numberOfStudents ||
-      numberOfStudents < 1 ||
-      numberOfStudents > registrationRules.maxStudentsPerProject
-    ) {
-      errors.push({
-        field: "numberOfStudents",
-        message: `Number of students must be between 1 and ${registrationRules.maxStudentsPerProject}`,
-      });
-    }
-
-    // Validate number of supervisors
-    if (
-      !numberOfSupervisors ||
-      numberOfSupervisors < 1 ||
-      numberOfSupervisors > registrationRules.maxSupervisorsPerProject
-    ) {
-      errors.push({
-        field: "numberOfSupervisors",
-        message: `Number of supervisors must be between 1 and ${registrationRules.maxSupervisorsPerProject}`,
-      });
-    }
-
-    // Validate students array length matches numberOfStudents
-    if (!students || students.length !== numberOfStudents) {
-      errors.push({
-        field: "students",
-        message: "Students array length must match numberOfStudents",
-      });
-    }
-
-    // Validate supervisors array length matches numberOfSupervisors
-    if (!supervisors || supervisors.length !== numberOfSupervisors) {
-      errors.push({
-        field: "supervisors",
-        message: "Supervisors array length must match numberOfSupervisors",
-      });
-    }
-
-    // Validate faculty and department IDs
-    if (!facultyId) {
-      errors.push({
-        field: "facultyId",
-        message: "Faculty ID is required",
-      });
-    }
-
-    if (!departmentId) {
-      errors.push({
-        field: "departmentId",
-        message: "Department ID is required",
-      });
-    }
-
-    // Validate each student
-    if (students && Array.isArray(students)) {
-      students.forEach((student, index) => {
-        if (!student.firstName || !isValidName(student.firstName)) {
-          errors.push({
-            field: `students[${index}].firstName`,
-            message: "Invalid first name (2-100 letters only)",
-          });
-        }
-        if (!student.lastName || !isValidName(student.lastName)) {
-          errors.push({
-            field: `students[${index}].lastName`,
-            message: "Invalid last name (2-100 letters only)",
-          });
-        }
-        if (!student.email) {
-          errors.push({
-            field: `students[${index}].email`,
-            message: "Email is required",
-          });
-        } else if (!isValidEmail(student.email)) {
-          errors.push({
-            field: `students[${index}].email`,
-            message: "Invalid email format",
-          });
-        }
-        if (!student.academicLevel) {
-          errors.push({
-            field: `students[${index}].academicLevel`,
-            message: "Academic level is required",
-          });
-        } else if (!isValidAcademicLevel(student.academicLevel)) {
-          errors.push({
-            field: `students[${index}].academicLevel`,
-            message:
-              "Invalid academic level (must be L1, L2, L3, M1, M2, or PhD)",
-          });
-        }
-      });
-
-      // Check for duplicate emails within students
-      const studentEmails = students.map((s) => s.email).filter((e) => e);
-      const duplicateStudentEmails = studentEmails.filter(
-        (email, index) => studentEmails.indexOf(email) !== index
-      );
-      if (duplicateStudentEmails.length > 0) {
-        errors.push({
-          field: "students",
-          message: `Duplicate student emails found: ${duplicateStudentEmails.join(
-            ", "
-          )}`,
-        });
-      }
-    }
-
-    // Validate each supervisor
-    if (supervisors && Array.isArray(supervisors)) {
-      supervisors.forEach((supervisor, index) => {
-        if (!supervisor.firstName || !isValidName(supervisor.firstName)) {
-          errors.push({
-            field: `supervisors[${index}].firstName`,
-            message: "Invalid first name (2-100 letters only)",
-          });
-        }
-        if (!supervisor.lastName || !isValidName(supervisor.lastName)) {
-          errors.push({
-            field: `supervisors[${index}].lastName`,
-            message: "Invalid last name (2-100 letters only)",
-          });
-        }
-        if (!supervisor.email) {
-          errors.push({
-            field: `supervisors[${index}].email`,
-            message: "Email is required",
-          });
-        } else if (!isValidEmail(supervisor.email)) {
-          errors.push({
-            field: `supervisors[${index}].email`,
-            message: "Invalid email format",
-          });
-        }
-      });
-
-      // Check for duplicate emails within supervisors
-      const supervisorEmails = supervisors.map((s) => s.email).filter((e) => e);
-      const duplicateSupervisorEmails = supervisorEmails.filter(
-        (email, index) => supervisorEmails.indexOf(email) !== index
-      );
-      if (duplicateSupervisorEmails.length > 0) {
-        errors.push({
-          field: "supervisors",
-          message: `Duplicate supervisor emails found: ${duplicateSupervisorEmails.join(
-            ", "
-          )}`,
-        });
-      }
-    }
+    const errors = buildRegistrationValidationErrors(
+      {
+        projectTitle,
+        numberOfStudents,
+        numberOfSupervisors,
+        facultyId,
+        departmentId,
+        students,
+        supervisors,
+      },
+      registrationRules
+    );
 
     // Return validation errors if any
     if (errors.length > 0) {
@@ -277,6 +296,20 @@ const createNewRegistration = async (req, res) => {
       });
     }
 
+    const studentEmails = students.map((student) => student.email).filter(Boolean);
+    const existingRegistration = await findActiveRegistrationByStudentEmails(
+      studentEmails,
+      ["pending", "in_review", "revision_required", "approved"]
+    );
+    if (existingRegistration) {
+      return res.status(409).json({
+        success: false,
+        message: "Registration already exists",
+        error:
+          "One or more students already have an active registration or approved project.",
+      });
+    }
+
     // Create registration with students and supervisors
     const registration = await createRegistration({
       title: projectTitle.trim(),
@@ -302,6 +335,134 @@ const createNewRegistration = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to create registration",
+      error: "Internal server error",
+    });
+  }
+};
+
+/**
+ * Update the authenticated student's registration before approval
+ * PATCH /api/projects/register
+ */
+const updateMyRegistration = async (req, res) => {
+  try {
+    const {
+      projectTitle,
+      numberOfStudents,
+      numberOfSupervisors,
+      facultyId,
+      departmentId,
+      students,
+      supervisors,
+    } = req.body;
+
+    const user = await getUserByID(req.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const registration = await getRegistrationByParticipantEmail(user.email);
+    if (!registration) {
+      return res.status(404).json({
+        success: false,
+        message: "Registration not found",
+        error: "No registration is linked to this account.",
+      });
+    }
+
+    const editableStatuses = ["pending", "in_review", "revision_required"];
+    if (!editableStatuses.includes(registration.status)) {
+      return res.status(409).json({
+        success: false,
+        message: "Registration cannot be updated",
+        error: "Only pending registrations can be updated before approval.",
+      });
+    }
+
+    const settings = await readSettingsFile();
+    const registrationRules = settings.registration;
+
+    const errors = buildRegistrationValidationErrors(
+      {
+        projectTitle,
+        numberOfStudents,
+        numberOfSupervisors,
+        facultyId,
+        departmentId,
+        students,
+        supervisors,
+      },
+      registrationRules
+    );
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors,
+      });
+    }
+
+    const facultyExists = await verifyFacultyExists(facultyId);
+    if (!facultyExists) {
+      return res.status(404).json({
+        success: false,
+        message: "Faculty or department not found",
+        error: `The selected faculty ID (${facultyId}) does not exist`,
+      });
+    }
+
+    const departmentValid = await verifyDepartmentBelongsToFaculty(
+      departmentId,
+      facultyId
+    );
+    if (!departmentValid) {
+      return res.status(404).json({
+        success: false,
+        message: "Faculty or department not found",
+        error: `The selected department ID (${departmentId}) does not belong to faculty ID (${facultyId})`,
+      });
+    }
+
+    const isDuplicate = await checkDuplicateTitle(
+      projectTitle,
+      facultyId,
+      registration.id
+    );
+    if (isDuplicate) {
+      return res.status(409).json({
+        success: false,
+        message: "Duplicate registration detected",
+        error: "A project with this title already exists for this faculty",
+      });
+    }
+
+    const updated = await updateRegistrationDetails(registration.id, {
+      title: projectTitle,
+      facultyId,
+      departementId: departmentId,
+      students,
+      supervisors,
+    });
+
+    return res.json({
+      success: true,
+      message: "Registration updated successfully",
+      data: {
+        registrationId: updated.id,
+        projectTitle: updated.title,
+        status: updated.status,
+        submittedAt: updated.submitted_at,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating registration:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update registration",
       error: "Internal server error",
     });
   }
@@ -605,6 +766,7 @@ const deleteOne = async (req, res) => {
 
 module.exports = {
   createNewRegistration,
+  updateMyRegistration,
   getAll,
   getOne,
   updateStatus,

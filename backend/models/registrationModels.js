@@ -214,14 +214,36 @@ const verifyDepartmentBelongsToFaculty = async (departementId, facultyId) => {
 /**
  * Check for duplicate project title in same faculty
  */
-const checkDuplicateTitle = async (title, facultyId) => {
-  const existing = await prisma.project_registrations.findFirst({
+const checkDuplicateTitle = async (title, facultyId, excludeId = null) => {
+  const where = {
+    title: title.trim(),
+    faculty_id: parseInt(facultyId),
+  };
+
+  if (excludeId) {
+    where.NOT = { id: parseInt(excludeId) };
+  }
+
+  const existing = await prisma.project_registrations.findFirst({ where });
+  return existing !== null;
+};
+
+const findActiveRegistrationByStudentEmails = async (
+  emails = [],
+  activeStatuses = []
+) => {
+  if (!Array.isArray(emails) || emails.length === 0) return null;
+
+  return await prisma.project_registrations.findFirst({
     where: {
-      title: title.trim(),
-      faculty_id: parseInt(facultyId),
+      status: activeStatuses.length > 0 ? { in: activeStatuses } : undefined,
+      registration_students: {
+        some: {
+          email: { in: emails },
+        },
+      },
     },
   });
-  return existing !== null;
 };
 
 const getRegistrationByParticipantEmail = async (email) => {
@@ -279,6 +301,56 @@ const getRegistrationByParticipantEmail = async (email) => {
         },
       },
     },
+  });
+};
+
+const updateRegistrationDetails = async (
+  registrationId,
+  { title, facultyId, departementId, students, supervisors }
+) => {
+  return await prisma.$transaction(async (tx) => {
+    const registration = await tx.project_registrations.update({
+      where: { id: parseInt(registrationId, 10) },
+      data: {
+        title: title.trim(),
+        faculty_id: parseInt(facultyId, 10),
+        departement_id: parseInt(departementId, 10),
+      },
+    });
+
+    await tx.registration_students.deleteMany({
+      where: { registration_id: registration.id },
+    });
+    await tx.registration_supervisors.deleteMany({
+      where: { registration_id: registration.id },
+    });
+
+    if (Array.isArray(students) && students.length > 0) {
+      await tx.registration_students.createMany({
+        data: students.map((student) => ({
+          registration_id: registration.id,
+          first_name: student.firstName,
+          last_name: student.lastName,
+          email: student.email || null,
+          phone: student.phone || null,
+          academic_level: student.academicLevel,
+        })),
+      });
+    }
+
+    if (Array.isArray(supervisors) && supervisors.length > 0) {
+      await tx.registration_supervisors.createMany({
+        data: supervisors.map((supervisor) => ({
+          registration_id: registration.id,
+          first_name: supervisor.firstName,
+          last_name: supervisor.lastName,
+          email: supervisor.email || null,
+          phone: supervisor.phone || null,
+        })),
+      });
+    }
+
+    return registration;
   });
 };
 
@@ -412,6 +484,8 @@ module.exports = {
   verifyFacultyExists,
   verifyDepartmentBelongsToFaculty,
   checkDuplicateTitle,
+  findActiveRegistrationByStudentEmails,
   getRegistrationByParticipantEmail,
+  updateRegistrationDetails,
   createApprovedProject,
 };
