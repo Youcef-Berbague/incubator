@@ -5,7 +5,7 @@ const props = defineProps({
   registrationStatusLabel: { type: String, default: "No registration" },
 });
 
-const emit = defineEmits(["scroll", "account", "home", "refresh"]);
+const emit = defineEmits(["scroll", "account", "home", "refresh", "register"]);
 
 const goSection = (sectionId) => {
   emit("scroll", sectionId);
@@ -38,11 +38,11 @@ const goSection = (sectionId) => {
         </div>
       </button>
 
-      <button class="sidebar-item" @click="goSection('access-section')">
-        <div class="sidebar-icon">🔐</div>
+      <button class="sidebar-item" @click="emit('register')">
+        <div class="sidebar-icon">🧾</div>
         <div class="sidebar-content">
-          <h4>Access</h4>
-          <p>View permissions</p>
+          <h4>Register Project</h4>
+          <p>Submit or update</p>
         </div>
       </button>
 

@@ -4,6 +4,7 @@ const router = express.Router();
 const { registerLimiter } = require("../config/limiterConfig");
 const {
   createNewRegistration,
+  getMyRegistrationDetails,
   updateMyRegistration,
   getAll,
   getOne,
@@ -25,13 +26,23 @@ router.post("/projects/register", registerLimiter, createNewRegistration);
 router.use(verifyJWT);
 
 /**
+ * Student detail route - View registration details
+ * GET /api/projects/register
+ */
+router.get(
+  "/projects/register",
+  verifyRoles(ROLES.student),
+  getMyRegistrationDetails,
+);
+
+/**
  * Student update route - Modify registration before approval
  * PATCH /api/projects/register
  */
 router.patch(
   "/projects/register",
   verifyRoles(ROLES.student),
-  updateMyRegistration
+  updateMyRegistration,
 );
 
 /**
@@ -40,7 +51,7 @@ router.patch(
 router.get(
   "/registrations",
   verifyRoles(ROLES.admin, ROLES.superAdmin),
-  getAll
+  getAll,
 );
 
 /**
@@ -51,7 +62,7 @@ router.get(
 router.get(
   "/registrations/:id",
   verifyRoles(ROLES.admin, ROLES.superAdmin),
-  getOne
+  getOne,
 );
 
 /**
@@ -62,7 +73,7 @@ router.get(
 router.patch(
   "/registrations/:id/status",
   verifyRoles(ROLES.admin, ROLES.superAdmin),
-  updateStatus
+  updateStatus,
 );
 
 /**
@@ -70,10 +81,6 @@ router.patch(
  * DELETE /api/registrations/:id
  * Requires: SuperAdmin role only
  */
-router.delete(
-  "/registrations/:id",
-  verifyRoles(ROLES.superAdmin),
-  deleteOne
-);
+router.delete("/registrations/:id", verifyRoles(ROLES.superAdmin), deleteOne);
 
 module.exports = router;

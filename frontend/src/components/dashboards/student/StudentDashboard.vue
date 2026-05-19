@@ -9,7 +9,6 @@ import StudentDashboardSidebar from "./components/StudentDashboardSidebar.vue";
 import StudentStatsGrid from "./components/StudentStatsGrid.vue";
 import StudentProjectsSection from "./components/StudentProjectsSection.vue";
 import StudentRegistrationSection from "./components/StudentRegistrationSection.vue";
-import StudentAccessSection from "./components/StudentAccessSection.vue";
 import StudentProfileSection from "./components/StudentProfileSection.vue";
 
 const router = useRouter();
@@ -31,7 +30,6 @@ const summary = ref({
 const profile = ref(null);
 const projects = ref([]);
 const registration = ref(null);
-const roleSnapshot = ref(null);
 
 const statusLabels = {
   pending: "Pending",
@@ -73,6 +71,21 @@ const registrationStatusLabel = computed(() => {
     "Pending"
   );
 });
+
+const editableStatuses = ["pending", "in_review", "revision_required"];
+const canEditRegistration = computed(() => {
+  if (!registration.value) return true;
+  return editableStatuses.includes(registration.value.status);
+});
+const registrationActionLabel = computed(() => {
+  if (!registration.value) return "Start Registration";
+  return canEditRegistration.value
+    ? "Edit Registration"
+    : "Registration Locked";
+});
+const registrationActionDisabled = computed(
+  () => Boolean(registration.value) && !canEditRegistration.value,
+);
 
 const formatDateTime = (value) => {
   if (!value) return "N/A";
@@ -210,8 +223,6 @@ const loadStudentDashboard = async () => {
         dashboardSummary?.registration ||
         null,
     );
-    roleSnapshot.value = dashboardRole || null;
-
     summary.value = {
       projectCount:
         meSummary?.projectCount ??
@@ -263,6 +274,10 @@ const goHome = () => {
   router.push("/");
 };
 
+const goToRegistration = () => {
+  router.push("/dashboard/project-registration");
+};
+
 const handleLogout = async () => {
   await authStore.logout();
   router.push("/");
@@ -304,6 +319,7 @@ onMounted(() => {
         @account="goToAccount"
         @home="goHome"
         @refresh="refreshDashboard"
+        @register="goToRegistration"
       />
 
       <div class="dashboard-main">
@@ -341,15 +357,10 @@ onMounted(() => {
               section-id="registration-section"
               :registration="registration"
               :registration-status-label="registrationStatusLabel"
+              :action-label="registrationActionLabel"
+              :action-disabled="registrationActionDisabled"
               :format-date-time="formatDateTime"
-              @action="refreshDashboard"
-            />
-
-            <StudentAccessSection
-              section-id="access-section"
-              :role-snapshot="roleSnapshot"
-              :current-role-label="currentRoleLabel"
-              :current-role-value="currentRole"
+              @action="goToRegistration"
             />
 
             <StudentProfileSection

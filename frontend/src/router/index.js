@@ -6,6 +6,7 @@ import Register from "../views/Register.vue";
 import Login from "../views/Login.vue";
 import Dashboard from "../views/Dashboard.vue";
 import RegistrationSuccess from "../views/RegistrationSuccess.vue";
+import StudentProjectRegistration from "../components/dashboards/student/StudentProjectRegistration.vue";
 import RegistrationsManagement from "../components/dashboards/super-admin/management/RegistrationsManagement.vue";
 import UsersManagement from "../components/dashboards/super-admin/management/UsersManagement.vue";
 import FacultiesManagement from "../components/dashboards/super-admin/management/FacultiesManagement.vue";
@@ -46,6 +47,12 @@ const routes = [
     path: "/dashboard",
     name: "Dashboard",
     component: Dashboard,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/dashboard/project-registration",
+    name: "StudentProjectRegistration",
+    component: StudentProjectRegistration,
     meta: { requiresAuth: true },
   },
   {

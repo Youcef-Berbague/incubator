@@ -2,6 +2,8 @@
 const props = defineProps({
   registration: { type: Object, default: null },
   registrationStatusLabel: { type: String, default: "No registration" },
+  actionLabel: { type: String, default: "Refresh" },
+  actionDisabled: { type: Boolean, default: false },
   sectionId: { type: String, default: "registration-section" },
   formatDateTime: { type: Function, required: true },
 });
@@ -27,7 +29,13 @@ const getStatusColor = (status) => statusColors[status] || "#666";
         <h2>Latest Registration</h2>
         <p>Your most recent project submission</p>
       </div>
-      <button class="btn-view-all" @click="emit('action')">Refresh</button>
+      <button
+        class="btn-view-all"
+        :disabled="actionDisabled"
+        @click="emit('action')"
+      >
+        {{ actionLabel }}
+      </button>
     </div>
 
     <div v-if="!registration" class="empty-state">

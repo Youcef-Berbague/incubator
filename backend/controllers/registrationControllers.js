@@ -166,13 +166,13 @@ const buildRegistrationValidationErrors = (payload, registrationRules) => {
 
     const studentEmails = students.map((s) => s.email).filter((e) => e);
     const duplicateStudentEmails = studentEmails.filter(
-      (email, index) => studentEmails.indexOf(email) !== index
+      (email, index) => studentEmails.indexOf(email) !== index,
     );
     if (duplicateStudentEmails.length > 0) {
       errors.push({
         field: "students",
         message: `Duplicate student emails found: ${duplicateStudentEmails.join(
-          ", "
+          ", ",
         )}`,
       });
     }
@@ -207,13 +207,13 @@ const buildRegistrationValidationErrors = (payload, registrationRules) => {
 
     const supervisorEmails = supervisors.map((s) => s.email).filter((e) => e);
     const duplicateSupervisorEmails = supervisorEmails.filter(
-      (email, index) => supervisorEmails.indexOf(email) !== index
+      (email, index) => supervisorEmails.indexOf(email) !== index,
     );
     if (duplicateSupervisorEmails.length > 0) {
       errors.push({
         field: "supervisors",
         message: `Duplicate supervisor emails found: ${duplicateSupervisorEmails.join(
-          ", "
+          ", ",
         )}`,
       });
     }
@@ -251,7 +251,7 @@ const createNewRegistration = async (req, res) => {
         students,
         supervisors,
       },
-      registrationRules
+      registrationRules,
     );
 
     // Return validation errors if any
@@ -276,7 +276,7 @@ const createNewRegistration = async (req, res) => {
     // Verify department exists and belongs to faculty
     const departmentValid = await verifyDepartmentBelongsToFaculty(
       departmentId,
-      facultyId
+      facultyId,
     );
     if (!departmentValid) {
       return res.status(404).json({
@@ -296,10 +296,12 @@ const createNewRegistration = async (req, res) => {
       });
     }
 
-    const studentEmails = students.map((student) => student.email).filter(Boolean);
+    const studentEmails = students
+      .map((student) => student.email)
+      .filter(Boolean);
     const existingRegistration = await findActiveRegistrationByStudentEmails(
       studentEmails,
-      ["pending", "in_review", "revision_required", "approved"]
+      ["pending", "in_review", "revision_required", "approved"],
     );
     if (existingRegistration) {
       return res.status(409).json({
@@ -395,7 +397,7 @@ const updateMyRegistration = async (req, res) => {
         students,
         supervisors,
       },
-      registrationRules
+      registrationRules,
     );
 
     if (errors.length > 0) {
@@ -417,7 +419,7 @@ const updateMyRegistration = async (req, res) => {
 
     const departmentValid = await verifyDepartmentBelongsToFaculty(
       departmentId,
-      facultyId
+      facultyId,
     );
     if (!departmentValid) {
       return res.status(404).json({
@@ -430,7 +432,7 @@ const updateMyRegistration = async (req, res) => {
     const isDuplicate = await checkDuplicateTitle(
       projectTitle,
       facultyId,
-      registration.id
+      registration.id,
     );
     if (isDuplicate) {
       return res.status(409).json({
@@ -463,6 +465,78 @@ const updateMyRegistration = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to update registration",
+      error: "Internal server error",
+    });
+  }
+};
+
+/**
+ * Get the authenticated student's registration details
+ * GET /api/projects/register
+ */
+const getMyRegistrationDetails = async (req, res) => {
+  try {
+    const user = await getUserByID(req.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const registration = await getRegistrationByParticipantEmail(user.email);
+    if (!registration) {
+      return res.json({
+        success: true,
+        data: null,
+      });
+    }
+
+    const formattedData = {
+      id: registration.id,
+      projectTitle: registration.title,
+      status: registration.status,
+      submittedAt: registration.submitted_at,
+      faculty: registration.faculties
+        ? {
+            id: registration.faculties.id,
+            name: registration.faculties.faculty_name,
+            nameEn: registration.faculties.faculty_name_en,
+          }
+        : null,
+      department: registration.departements
+        ? {
+            id: registration.departements.id,
+            name: registration.departements.departement_name,
+            nameEn: registration.departements.departement_name_en,
+          }
+        : null,
+      students: registration.registration_students.map((student) => ({
+        id: student.id,
+        firstName: student.first_name,
+        lastName: student.last_name,
+        email: student.email,
+        phone: student.phone,
+        academicLevel: student.academic_level,
+      })),
+      supervisors: registration.registration_supervisors.map((supervisor) => ({
+        id: supervisor.id,
+        firstName: supervisor.first_name,
+        lastName: supervisor.last_name,
+        email: supervisor.email,
+        phone: supervisor.phone,
+      })),
+    };
+
+    return res.json({
+      success: true,
+      data: formattedData,
+    });
+  } catch (error) {
+    console.error("Error fetching student registration:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch registration",
       error: "Internal server error",
     });
   }
@@ -625,7 +699,7 @@ const updateStatus = async (req, res) => {
           {
             field: "status",
             message: `Invalid status. Must be one of: ${validStatuses.join(
-              ", "
+              ", ",
             )}`,
           },
         ],
@@ -655,7 +729,7 @@ const updateStatus = async (req, res) => {
     const updatedRegistration = await updateRegistrationStatus(
       id,
       status,
-      reviewerNotes
+      reviewerNotes,
     );
 
     // If status is "approved", create project and users
@@ -767,6 +841,7 @@ const deleteOne = async (req, res) => {
 module.exports = {
   createNewRegistration,
   updateMyRegistration,
+  getMyRegistrationDetails,
   getAll,
   getOne,
   updateStatus,

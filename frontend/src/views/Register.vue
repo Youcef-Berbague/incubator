@@ -32,6 +32,15 @@ const supervisors = ref([
 // Load faculties on mount
 onMounted(async () => {
   try {
+    if (!authStore.isInitialized) {
+      await authStore.checkAuth();
+    }
+
+    if (authStore.isAuthenticated) {
+      router.push("/dashboard/project-registration");
+      return;
+    }
+
     loading.value = true;
     const response = await api.get("/faculties");
     faculties.value = response.data;
@@ -560,7 +569,11 @@ const navigateHome = () => {
 }
 
 .register-page {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
   min-height: 100vh;
   background: #ffffff;
@@ -833,7 +846,8 @@ const navigateHome = () => {
 }
 
 .form-section:last-of-type .input-group select:focus {
-  box-shadow: 0 0 0 4px rgba(97, 206, 112, 0.15),
+  box-shadow:
+    0 0 0 4px rgba(97, 206, 112, 0.15),
     0 8px 20px rgba(97, 206, 112, 0.2);
   border-color: #23a455;
 }

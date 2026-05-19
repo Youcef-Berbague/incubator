@@ -230,7 +230,7 @@ const checkDuplicateTitle = async (title, facultyId, excludeId = null) => {
 
 const findActiveRegistrationByStudentEmails = async (
   emails = [],
-  activeStatuses = []
+  activeStatuses = [],
 ) => {
   if (!Array.isArray(emails) || emails.length === 0) return null;
 
@@ -306,7 +306,7 @@ const getRegistrationByParticipantEmail = async (email) => {
 
 const updateRegistrationDetails = async (
   registrationId,
-  { title, facultyId, departementId, students, supervisors }
+  { title, facultyId, departementId, students, supervisors },
 ) => {
   return await prisma.$transaction(async (tx) => {
     const registration = await tx.project_registrations.update({
