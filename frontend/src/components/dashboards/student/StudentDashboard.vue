@@ -4,6 +4,13 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import api from "../../../api.js";
 import { ROLES, getHighestRole } from "../../../config/roles";
+import StudentDashboardNav from "./components/StudentDashboardNav.vue";
+import StudentDashboardSidebar from "./components/StudentDashboardSidebar.vue";
+import StudentStatsGrid from "./components/StudentStatsGrid.vue";
+import StudentProjectsSection from "./components/StudentProjectsSection.vue";
+import StudentRegistrationSection from "./components/StudentRegistrationSection.vue";
+import StudentAccessSection from "./components/StudentAccessSection.vue";
+import StudentProfileSection from "./components/StudentProfileSection.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -54,7 +61,10 @@ const currentRole = computed(() => getHighestRole(authStore.user?.role));
 const currentRoleLabel = computed(
   () => roleLabels[currentRole.value] || "Student",
 );
-const hasProject = computed(() => projects.value.length > 0);
+const userFirstName = computed(() => {
+  const name = userName.value || "Student";
+  return name.split(" ")[0] || name;
+});
 const registrationStatusLabel = computed(() => {
   if (!registration.value) return "No registration";
   return (
@@ -253,6 +263,11 @@ const goHome = () => {
   router.push("/");
 };
 
+const handleLogout = async () => {
+  await authStore.logout();
+  router.push("/");
+};
+
 const scrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId);
   if (element) {
@@ -270,929 +285,796 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="student-dashboard">
-    <div class="ambient ambient-left"></div>
-    <div class="ambient ambient-right"></div>
+  <div class="student-dashboard">
+    <StudentDashboardNav
+      :user-name="userName"
+      :user-email="userEmail"
+      :role-label="currentRoleLabel"
+      @home="goHome"
+      @account="goToAccount"
+      @logout="handleLogout"
+    />
 
-    <div class="page-shell">
-      <header class="hero-card">
-        <div class="hero-copy">
-          <p class="eyebrow">Student Portal</p>
-          <h1>Welcome, {{ userName }}</h1>
-          <p class="hero-text">
-            This dashboard is synced with your student-access backend data so
-            you can track your registration, projects, and current access status
-            in one place.
-          </p>
+    <div class="dashboard-content">
+      <StudentDashboardSidebar
+        :project-count="projects.length"
+        :has-registration="summary.hasRegistration"
+        :registration-status-label="registrationStatusLabel"
+        @scroll="scrollToSection"
+        @account="goToAccount"
+        @home="goHome"
+        @refresh="refreshDashboard"
+      />
 
-          <div class="hero-meta">
-            <span class="meta-chip">Role: {{ currentRoleLabel }}</span>
-            <span class="meta-chip">Email: {{ userEmail }}</span>
-            <span class="meta-chip">
-              Updated:
-              {{ lastUpdated ? formatDateTime(lastUpdated) : "Not loaded yet" }}
-            </span>
+      <div class="dashboard-main">
+        <div class="container">
+          <div class="dashboard-header">
+            <div>
+              <h1>Welcome back, {{ userFirstName }}!</h1>
+              <p>Track your student progress and registration status.</p>
+            </div>
           </div>
+
+          <div v-if="error" class="error-message">
+            {{ error }}
+          </div>
+
+          <div v-if="loading" class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading dashboard data...</p>
+          </div>
+
+          <template v-else>
+            <StudentStatsGrid
+              :summary="summary"
+              :registration-status-label="registrationStatusLabel"
+              :current-role-label="currentRoleLabel"
+            />
+
+            <StudentProjectsSection
+              section-id="projects-section"
+              :projects="projects"
+              @view-all="scrollToSection('projects-section')"
+            />
+
+            <StudentRegistrationSection
+              section-id="registration-section"
+              :registration="registration"
+              :registration-status-label="registrationStatusLabel"
+              :format-date-time="formatDateTime"
+              @action="refreshDashboard"
+            />
+
+            <StudentAccessSection
+              section-id="access-section"
+              :role-snapshot="roleSnapshot"
+              :current-role-label="currentRoleLabel"
+              :current-role-value="currentRole"
+            />
+
+            <StudentProfileSection
+              section-id="profile-section"
+              :user-name="userName"
+              :user-email="userEmail"
+              :current-role-label="currentRoleLabel"
+              :project-count="summary.projectCount"
+              @account="goToAccount"
+            />
+          </template>
         </div>
-
-        <div class="hero-actions">
-          <button
-            class="action-button primary"
-            :disabled="loading"
-            @click="refreshDashboard"
-          >
-            {{ loading ? "Refreshing..." : "Refresh data" }}
-          </button>
-          <button class="action-button secondary" @click="goToAccount">
-            My account
-          </button>
-          <button class="action-button secondary" @click="goHome">
-            Go home
-          </button>
-        </div>
-      </header>
-
-      <div v-if="error" class="notice notice-warning">
-        {{ error }}
       </div>
-
-      <div v-if="loading" class="loading-card">
-        <div class="spinner"></div>
-        <p>Loading student dashboard...</p>
-      </div>
-
-      <template v-else>
-        <section class="stats-grid">
-          <article class="stat-card accent-green">
-            <span class="stat-label">Linked projects</span>
-            <strong class="stat-value">{{ summary.projectCount }}</strong>
-            <small class="stat-note">
-              {{ summary.assignedProjects }} project{{
-                summary.assignedProjects === 1 ? "" : "s"
-              }}
-              available through your access level.
-            </small>
-          </article>
-
-          <article class="stat-card accent-blue">
-            <span class="stat-label">Registration</span>
-            <strong class="stat-value">{{ registrationStatusLabel }}</strong>
-            <small class="stat-note">
-              {{
-                summary.hasRegistration
-                  ? "A submission exists in the backend."
-                  : "No registration record was found."
-              }}
-            </small>
-          </article>
-
-          <article class="stat-card accent-gold">
-            <span class="stat-label">Self-service</span>
-            <strong class="stat-value">
-              {{ summary.canSelfServe ? "Enabled" : "Restricted" }}
-            </strong>
-            <small class="stat-note">
-              {{
-                roleSnapshot?.canSelfServe
-                  ? "Your role can access student-facing dashboard data."
-                  : "Your role is limited."
-              }}
-            </small>
-          </article>
-
-          <article class="stat-card accent-slate">
-            <span class="stat-label">Backend sync</span>
-            <strong class="stat-value">Live</strong>
-            <small class="stat-note">
-              {{
-                profile
-                  ? "Profile, projects, and registration are loaded from the API."
-                  : "Waiting for profile data."
-              }}
-            </small>
-          </article>
-        </section>
-
-        <section class="quick-nav">
-          <button
-            class="quick-nav-item"
-            @click="scrollToSection('projects-section')"
-          >
-            View projects
-          </button>
-          <button
-            class="quick-nav-item"
-            @click="scrollToSection('registration-section')"
-          >
-            View registration
-          </button>
-          <button
-            class="quick-nav-item"
-            @click="scrollToSection('access-section')"
-          >
-            View access
-          </button>
-          <button
-            class="quick-nav-item"
-            @click="scrollToSection('profile-section')"
-          >
-            View profile
-          </button>
-        </section>
-
-        <section class="content-grid">
-          <article id="projects-section" class="panel panel-projects">
-            <div class="panel-header">
-              <div>
-                <p class="panel-kicker">Projects</p>
-                <h2>Your linked projects</h2>
-              </div>
-              <span class="panel-badge">{{ projects.length }}</span>
-            </div>
-
-            <div v-if="projects.length === 0" class="empty-state">
-              <div class="empty-icon">📦</div>
-              <h3>No project linked yet</h3>
-              <p>
-                Your account does not have an assigned project in the backend
-                yet. Once your team is linked, project details will appear here.
-              </p>
-            </div>
-
-            <div v-else class="project-list">
-              <article
-                v-for="project in projects"
-                :key="project.id"
-                class="project-card"
-              >
-                <div class="project-topline">
-                  <div>
-                    <p class="project-code">{{ project.code }}</p>
-                    <h3>{{ project.title }}</h3>
-                  </div>
-                  <span
-                    class="project-pill"
-                    :class="
-                      project.incubated
-                        ? 'project-pill-active'
-                        : 'project-pill-muted'
-                    "
-                  >
-                    {{ project.incubated ? "Incubated" : "In progress" }}
-                  </span>
-                </div>
-
-                <div class="progress-row">
-                  <div class="progress-track">
-                    <span
-                      class="progress-fill"
-                      :style="{ width: `${Math.min(project.progress, 100)}%` }"
-                    ></span>
-                  </div>
-                  <span class="progress-label">{{
-                    getProjectProgressLabel(project)
-                  }}</span>
-                </div>
-
-                <div class="project-metadata">
-                  <span>Faculty: {{ project.facultyName }}</span>
-                  <span>Department: {{ project.departmentName }}</span>
-                  <span v-if="project.preIncubationStatus"
-                    >Pre-incubation: {{ project.preIncubationStatus }}</span
-                  >
-                  <span v-if="project.accelerationStatus"
-                    >Acceleration: {{ project.accelerationStatus }}</span
-                  >
-                  <span v-if="project.teamId"
-                    >Team ID: {{ project.teamId }}</span
-                  >
-                </div>
-              </article>
-            </div>
-          </article>
-
-          <article id="registration-section" class="panel panel-registration">
-            <div class="panel-header">
-              <div>
-                <p class="panel-kicker">Registration</p>
-                <h2>Your latest submission</h2>
-              </div>
-              <span
-                class="panel-badge"
-                :class="getStatusClass(registration?.status)"
-              >
-                {{ registrationStatusLabel }}
-              </span>
-            </div>
-
-            <div v-if="registration" class="details-list">
-              <div class="details-row">
-                <span>Project title</span>
-                <strong>{{ registration.title }}</strong>
-              </div>
-              <div class="details-row">
-                <span>Faculty</span>
-                <strong>{{ registration.facultyName }}</strong>
-              </div>
-              <div class="details-row">
-                <span>Department</span>
-                <strong>{{ registration.departmentName }}</strong>
-              </div>
-              <div class="details-row">
-                <span>Submitted at</span>
-                <strong>{{ formatDateTime(registration.submittedAt) }}</strong>
-              </div>
-              <div class="details-row">
-                <span>Submission status</span>
-                <strong>{{ registrationStatusLabel }}</strong>
-              </div>
-            </div>
-
-            <div v-else class="empty-state compact">
-              <div class="empty-icon">📝</div>
-              <h3>No registration found</h3>
-              <p>
-                The backend did not return a project registration for your
-                account. If you already submitted one, check that your email
-                matches the registration record.
-              </p>
-            </div>
-          </article>
-
-          <article id="access-section" class="panel panel-access">
-            <div class="panel-header">
-              <div>
-                <p class="panel-kicker">Access</p>
-                <h2>Student capability snapshot</h2>
-              </div>
-            </div>
-
-            <div class="access-grid">
-              <div class="access-item">
-                <span class="access-label">Can self-serve</span>
-                <strong>{{ roleSnapshot?.canSelfServe ? "Yes" : "No" }}</strong>
-              </div>
-              <div class="access-item">
-                <span class="access-label">Can manage projects</span>
-                <strong>{{
-                  roleSnapshot?.canManageProjects ? "Yes" : "No"
-                }}</strong>
-              </div>
-              <div class="access-item">
-                <span class="access-label">Backend role</span>
-                <strong>{{ roleSnapshot?.role || currentRoleLabel }}</strong>
-              </div>
-              <div class="access-item">
-                <span class="access-label">Role value</span>
-                <strong>{{ currentRole }}</strong>
-              </div>
-            </div>
-
-            <p class="panel-footnote">
-              These values come directly from <span>/dashboard/role</span> and
-              are kept in sync with the backend authorization model.
-            </p>
-          </article>
-
-          <article id="profile-section" class="panel panel-profile">
-            <div class="panel-header">
-              <div>
-                <p class="panel-kicker">Profile</p>
-                <h2>Your account snapshot</h2>
-              </div>
-            </div>
-
-            <div class="details-list compact-details">
-              <div class="details-row">
-                <span>Name</span>
-                <strong>{{ userName }}</strong>
-              </div>
-              <div class="details-row">
-                <span>Email</span>
-                <strong>{{ userEmail }}</strong>
-              </div>
-              <div class="details-row">
-                <span>Role</span>
-                <strong>{{ currentRoleLabel }}</strong>
-              </div>
-              <div class="details-row">
-                <span>Registered projects</span>
-                <strong>{{ summary.projectCount }}</strong>
-              </div>
-            </div>
-
-            <button class="panel-link-button" @click="goToAccount">
-              Open account settings
-            </button>
-          </article>
-        </section>
-      </template>
     </div>
-  </section>
+  </div>
 </template>
 
-<style scoped>
+<style>
 .student-dashboard {
-  position: relative;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   min-height: 100vh;
+  background: #f5f5f5;
+  direction: ltr;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   overflow: hidden;
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(73, 158, 96, 0.16),
-      transparent 32%
-    ),
-    radial-gradient(
-      circle at top right,
-      rgba(22, 96, 135, 0.12),
-      transparent 28%
-    ),
-    linear-gradient(180deg, #f4fbf6 0%, #edf7ef 100%);
-  color: #11311d;
 }
 
-.ambient {
-  position: absolute;
-  width: 28rem;
-  height: 28rem;
-  border-radius: 999px;
-  filter: blur(24px);
-  opacity: 0.45;
-  pointer-events: none;
-}
-
-.ambient-left {
-  left: -12rem;
-  top: 4rem;
-  background: rgba(52, 157, 98, 0.18);
-}
-
-.ambient-right {
-  right: -10rem;
-  top: 8rem;
-  background: rgba(35, 87, 168, 0.12);
-}
-
-.page-shell {
-  position: relative;
-  z-index: 1;
-  width: min(1400px, calc(100% - 2rem));
+.student-dashboard .container {
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 1.25rem 0 3rem;
+  padding: 0 24px;
+  width: 100%;
 }
 
-.hero-card,
-.panel,
-.loading-card,
-.notice,
-.quick-nav-item,
-.stat-card {
-  border: 1px solid rgba(16, 48, 27, 0.08);
-  box-shadow: 0 20px 60px rgba(16, 48, 27, 0.08);
+.student-dashboard .dashboard-navbar {
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 12px 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
 }
 
-.hero-card {
+.student-dashboard .dashboard-navbar .container {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: 2rem;
-  padding: 2rem;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(14px);
+  align-items: center;
 }
 
-.hero-copy {
-  max-width: 760px;
-}
-
-.eyebrow,
-.panel-kicker {
-  margin: 0 0 0.75rem;
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #2f7f4d;
-}
-
-h1 {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 3.4rem);
-  line-height: 1.06;
-  letter-spacing: -0.05em;
-}
-
-.hero-text {
-  margin: 1rem 0 0;
-  max-width: 54rem;
-  font-size: 1rem;
-  line-height: 1.75;
-  color: #526356;
-}
-
-.hero-meta {
+.student-dashboard .logo {
+  cursor: pointer;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
+  align-items: center;
+  gap: 12px;
 }
 
-.meta-chip,
-.panel-badge,
-.status-pill {
-  display: inline-flex;
+.student-dashboard .logo-img {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.student-dashboard .logo-img:hover {
+  transform: scale(1.05);
+}
+
+.student-dashboard .logo-text-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.student-dashboard .logo-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.3px;
+}
+
+.student-dashboard .logo-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #23a455;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.student-dashboard .nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.student-dashboard .user-menu-wrapper {
+  position: relative;
+}
+
+.student-dashboard .user-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 2px solid #e6edff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.student-dashboard .user-menu-btn:hover {
+  border-color: #61ce70;
+  background: #f0fdf4;
+}
+
+.student-dashboard .user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
+  color: white;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.55rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.82rem;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.student-dashboard .user-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: #1a1a1a;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.student-dashboard .dropdown-arrow {
+  font-size: 9px;
+  color: #666;
+}
+
+.student-dashboard .user-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: white;
+  border: 2px solid #e8f5eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(97, 206, 112, 0.15);
+  min-width: 250px;
+  z-index: 1000;
+  animation: dropdownSlide 0.3s ease;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.student-dashboard .user-info {
+  padding: 16px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #e8f5eb 100%);
+  border-radius: 10px 10px 0 0;
+}
+
+.student-dashboard .user-full-name {
   font-weight: 700;
+  font-size: 15px;
+  color: #1a1a1a;
+  margin-bottom: 4px;
 }
 
-.meta-chip {
-  background: rgba(16, 48, 27, 0.06);
-  color: #21432f;
+.student-dashboard .user-email {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
 }
 
-.hero-actions {
-  display: grid;
-  gap: 0.75rem;
-  min-width: 14rem;
+.student-dashboard .user-role {
+  font-size: 12px;
+  color: #23a455;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.action-button,
-.panel-link-button,
-.quick-nav-item {
+.student-dashboard .dropdown-divider {
+  height: 1px;
+  background: #e8f5eb;
+  margin: 8px 0;
+}
+
+.student-dashboard .dropdown-item {
+  width: 100%;
+  text-align: left;
+  background: none;
   border: none;
-  border-radius: 16px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
   cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
-  font: inherit;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-.action-button {
-  padding: 0.95rem 1rem;
+.student-dashboard .dropdown-item:hover {
+  background: #f0fdf4;
+  color: #23a455;
+}
+
+.student-dashboard .logout-btn {
+  color: #ff6b6b;
+}
+
+.student-dashboard .logout-btn:hover {
+  background: #fff5f5;
+  color: #e05555;
+}
+
+.student-dashboard .dashboard-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.student-dashboard .dashboard-sidebar {
+  width: 240px;
+  background: white;
+  border-right: 1px solid #e0e0e0;
+  padding: 20px 0;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.student-dashboard .sidebar-header {
+  padding: 0 20px 16px;
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 8px;
+}
+
+.student-dashboard .sidebar-header h3 {
+  font-size: 14px;
   font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 3px;
+  letter-spacing: -0.3px;
 }
 
-.action-button:hover,
-.quick-nav-item:hover,
-.panel-link-button:hover {
-  transform: translateY(-1px);
+.student-dashboard .sidebar-header p {
+  font-size: 11px;
+  color: #666;
 }
 
-.action-button.primary {
-  color: white;
-  background: linear-gradient(135deg, #1d8f4c 0%, #2f6fdf 100%);
+.student-dashboard .sidebar-nav {
+  display: flex;
+  flex-direction: column;
 }
 
-.action-button.secondary,
-.panel-link-button,
-.quick-nav-item {
-  background: rgba(255, 255, 255, 0.95);
-  color: #193422;
+.student-dashboard .sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  border-left: 3px solid transparent;
 }
 
-.action-button:disabled {
-  opacity: 0.7;
-  cursor: progress;
+.student-dashboard .sidebar-item:hover {
+  background: #f0fdf4;
+  border-left-color: #61ce70;
 }
 
-.notice {
-  margin-top: 1rem;
-  padding: 1rem 1.1rem;
-  border-radius: 18px;
-  background: rgba(255, 251, 235, 0.94);
-  color: #7a4b00;
+.student-dashboard .sidebar-item:hover .sidebar-icon {
+  transform: scale(1.1);
 }
 
-.loading-card {
-  margin-top: 1rem;
-  display: grid;
-  place-items: center;
-  gap: 0.85rem;
-  min-height: 18rem;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.84);
+.student-dashboard .sidebar-icon {
+  font-size: 14px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  font-weight: 700;
+  color: #2f6f4f;
 }
 
-.spinner {
-  width: 52px;
-  height: 52px;
-  border-radius: 999px;
-  border: 4px solid rgba(46, 117, 73, 0.12);
-  border-top-color: #1d8f4c;
-  animation: spin 1s linear infinite;
+.student-dashboard .sidebar-item:hover .sidebar-icon {
+  background: #e8f5eb;
 }
 
-.loading-card p {
-  margin: 0;
-  color: #526356;
+.student-dashboard .sidebar-content {
+  flex: 1;
+}
+
+.student-dashboard .sidebar-content h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 2px;
+}
+
+.student-dashboard .sidebar-content p {
+  font-size: 11px;
+  color: #666;
+  line-height: 1.3;
+}
+
+.student-dashboard .sidebar-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 12px 20px;
+}
+
+.student-dashboard .sidebar-section-title {
+  padding: 12px 20px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.student-dashboard .dashboard-main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.student-dashboard .dashboard-main .container {
+  max-width: 1200px;
+  padding: 30px 24px;
+}
+
+.student-dashboard .dashboard-header {
+  margin-bottom: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.student-dashboard .dashboard-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+
+.student-dashboard .dashboard-header p {
+  font-size: 14px;
+  color: #666;
+}
+
+.student-dashboard .error-message {
+  background: #fff5f5;
+  border: 2px solid #ffcccc;
+  border-left: 4px solid #ff4444;
+  color: #cc0000;
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  font-size: 14px;
   font-weight: 600;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.stat-card {
-  border-radius: 24px;
-  padding: 1.15rem;
-  background: rgba(255, 255, 255, 0.9);
-  min-height: 10rem;
-}
-
-.stat-label {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-  color: #62806e;
-}
-
-.stat-value {
-  display: block;
-  margin-top: 0.7rem;
-  font-size: clamp(1.6rem, 3vw, 2.4rem);
-  letter-spacing: -0.05em;
-}
-
-.stat-note {
-  display: block;
-  margin-top: 0.5rem;
-  line-height: 1.6;
-  color: #587062;
-}
-
-.accent-green {
-  background: linear-gradient(
-    180deg,
-    rgba(241, 251, 244, 0.98),
-    rgba(255, 255, 255, 0.92)
-  );
-}
-
-.accent-blue {
-  background: linear-gradient(
-    180deg,
-    rgba(239, 247, 255, 0.98),
-    rgba(255, 255, 255, 0.92)
-  );
-}
-
-.accent-gold {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 249, 234, 0.98),
-    rgba(255, 255, 255, 0.92)
-  );
-}
-
-.accent-slate {
-  background: linear-gradient(
-    180deg,
-    rgba(244, 247, 248, 0.98),
-    rgba(255, 255, 255, 0.92)
-  );
-}
-
-.quick-nav {
+.student-dashboard .loading-state {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
 }
 
-.quick-nav-item {
-  padding: 0.85rem 1rem;
+.student-dashboard .spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e8f5eb;
+  border-top: 4px solid #61ce70;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
 }
 
-.content-grid {
+.student-dashboard .loading-state p {
+  color: #666;
+  font-size: 15px;
+}
+
+.student-dashboard .stats-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 1rem;
-  margin-top: 1rem;
-  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+  justify-items: stretch;
+  align-items: stretch;
 }
 
-.panel {
-  border-radius: 28px;
-  padding: 1.4rem;
-  background: rgba(255, 255, 255, 0.88);
-}
-
-.panel-projects {
-  grid-row: span 2;
-}
-
-.panel-header {
+.student-dashboard .stat-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 16px;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  width: 100%;
 }
 
-.panel-header h2 {
-  margin: 0;
-  font-size: 1.4rem;
-  letter-spacing: -0.04em;
+.student-dashboard .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(97, 206, 112, 0.15);
+  border-color: #e8f5eb;
 }
 
-.panel-badge {
-  background: rgba(29, 143, 76, 0.12);
-  color: #1d8f4c;
-}
-
-.status-pill {
-  background: rgba(16, 48, 27, 0.08);
-  color: #21432f;
-}
-
-.status-pending,
-.status-in_review {
-  background: rgba(45, 123, 255, 0.12);
-  color: #2756b6;
-}
-
-.status-approved {
-  background: rgba(29, 143, 76, 0.12);
-  color: #1d8f4c;
-}
-
-.status-rejected,
-.status-withdrawn {
-  background: rgba(229, 72, 77, 0.12);
-  color: #bf3b40;
-}
-
-.status-revision_required {
-  background: rgba(222, 123, 26, 0.12);
-  color: #ba6600;
-}
-
-.empty-state {
-  display: grid;
-  place-items: center;
-  text-align: center;
-  gap: 0.55rem;
-  min-height: 15rem;
-  padding: 1rem;
-  color: #526356;
-}
-
-.empty-state.compact {
-  min-height: 0;
-}
-
-.empty-icon {
-  font-size: 2.2rem;
-}
-
-.empty-state h3 {
-  margin: 0;
-  font-size: 1.2rem;
-}
-
-.empty-state p {
-  margin: 0;
-  max-width: 34rem;
-  line-height: 1.7;
-}
-
-.project-list {
-  display: grid;
-  gap: 0.9rem;
-}
-
-.project-card {
-  padding: 1rem;
-  border-radius: 22px;
-  background: linear-gradient(
-    180deg,
-    rgba(248, 252, 249, 0.95),
-    rgba(255, 255, 255, 0.98)
-  );
-  border: 1px solid rgba(16, 48, 27, 0.08);
-}
-
-.project-topline {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: flex-start;
-}
-
-.project-code {
-  margin: 0 0 0.3rem;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #629071;
-}
-
-.project-card h3 {
-  margin: 0;
-  font-size: 1.12rem;
-  letter-spacing: -0.03em;
-}
-
-.project-pill {
-  padding: 0.5rem 0.8rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.project-pill-active {
-  background: rgba(29, 143, 76, 0.12);
-  color: #1d8f4c;
-}
-
-.project-pill-muted {
-  background: rgba(16, 48, 27, 0.08);
-  color: #526356;
-}
-
-.progress-row {
+.student-dashboard .stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.9rem;
-}
-
-.progress-track {
-  position: relative;
-  flex: 1;
-  height: 0.8rem;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(16, 48, 27, 0.08);
-}
-
-.progress-fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #1d8f4c 0%, #2f6fdf 100%);
-}
-
-.progress-label {
-  flex: 0 0 auto;
-  font-size: 0.82rem;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
   font-weight: 700;
-  color: #526356;
 }
 
-.project-metadata {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem 1rem;
-  margin-top: 0.9rem;
-  color: #526356;
-  font-size: 0.9rem;
+.student-dashboard .stat-content h3 {
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.details-list {
-  display: grid;
-  gap: 0.8rem;
+.student-dashboard .stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 3px;
+  line-height: 1.1;
 }
 
-.compact-details {
-  margin-bottom: 1rem;
+.student-dashboard .stat-label {
+  font-size: 12px;
+  color: #999;
 }
 
-.details-row {
+.student-dashboard .section-card {
+  background: white;
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.student-dashboard .section-header {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.85rem 1rem;
-  border-radius: 18px;
-  background: rgba(16, 48, 27, 0.04);
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
 }
 
-.details-row span {
-  color: #6a7d71;
+.student-dashboard .section-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 3px;
 }
 
-.details-row strong {
-  text-align: right;
-  color: #173221;
+.student-dashboard .section-header p {
+  font-size: 13px;
+  color: #666;
 }
 
-.access-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.85rem;
+.student-dashboard .btn-view-all {
+  background: linear-gradient(135deg, #61ce70 0%, #23a455 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  box-shadow: 0 4px 15px rgba(97, 206, 112, 0.25);
 }
 
-.access-item {
-  padding: 1rem;
-  border-radius: 18px;
-  background: rgba(16, 48, 27, 0.04);
+.student-dashboard .btn-view-all:hover {
+  background: linear-gradient(135deg, #23a455 0%, #1a8542 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(35, 164, 85, 0.4);
 }
 
-.access-label {
+.student-dashboard .empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.student-dashboard .empty-icon {
+  font-size: 32px;
   display: block;
-  margin-bottom: 0.45rem;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: #6a7d71;
-}
-
-.access-item strong {
-  font-size: 1.02rem;
-}
-
-.panel-footnote {
-  margin: 1rem 0 0;
-  color: #617368;
-  line-height: 1.7;
-}
-
-.panel-footnote span {
+  margin-bottom: 16px;
   font-weight: 700;
-  color: #173221;
+  color: #b0b0b0;
 }
 
-.panel-link-button {
+.student-dashboard .empty-state p {
+  font-size: 16px;
+  color: #999;
+}
+
+.student-dashboard .registrations-table {
+  overflow-x: auto;
+}
+
+.student-dashboard table {
   width: 100%;
-  margin-top: 1rem;
-  padding: 0.9rem 1rem;
+  border-collapse: collapse;
+}
+
+.student-dashboard thead {
+  background: linear-gradient(135deg, #f0fdf4 0%, #e8f5eb 100%);
+}
+
+.student-dashboard th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 13px;
   font-weight: 700;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #61ce70;
+}
+
+.student-dashboard td {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.student-dashboard tr:hover {
+  background: #f0fdf4;
+}
+
+.student-dashboard .project-title {
+  font-weight: 600;
+  color: #1a1a1a;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.student-dashboard .status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  text-transform: capitalize;
+}
+
+.student-dashboard .badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.student-dashboard .badge-info {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.student-dashboard .date-text {
+  font-size: 13px;
+  color: #666;
+}
+
+.student-dashboard .btn-action {
+  background: #f0f0f0;
+  color: #1a1a1a;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
 @keyframes spin {
-  from {
+  0% {
     transform: rotate(0deg);
   }
-  to {
+  100% {
     transform: rotate(360deg);
   }
 }
 
-@media (max-width: 1100px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (max-width: 768px) {
+  .student-dashboard {
+    height: auto;
+    overflow: auto;
   }
 
-  .content-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .panel-projects {
-    grid-row: auto;
-  }
-}
-
-@media (max-width: 720px) {
-  .page-shell {
-    width: min(100% - 1rem, 1400px);
-    padding-top: 0.5rem;
-  }
-
-  .hero-card {
+  .student-dashboard .dashboard-content {
     flex-direction: column;
-    padding: 1.35rem;
+    overflow: auto;
   }
 
-  .hero-actions {
+  .student-dashboard .dashboard-sidebar {
     width: 100%;
-  }
-
-  .stats-grid,
-  .access-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .project-topline,
-  .details-row {
-    flex-direction: column;
-  }
-
-  .details-row strong {
-    text-align: left;
-  }
-
-  .quick-nav {
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 16px 0;
     overflow-x: auto;
-    flex-wrap: nowrap;
-    padding-bottom: 0.25rem;
+    overflow-y: visible;
   }
 
-  .quick-nav-item {
-    flex: 0 0 auto;
+  .student-dashboard .sidebar-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .student-dashboard .sidebar-item {
+    flex-direction: column;
+    min-width: 110px;
+    padding: 10px;
+    text-align: center;
+    gap: 6px;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+
+  .student-dashboard .sidebar-item:hover {
+    border-left-color: transparent;
+    border-bottom-color: #61ce70;
+  }
+
+  .student-dashboard .sidebar-content h4 {
+    font-size: 11px;
+  }
+
+  .student-dashboard .sidebar-content p {
+    display: none;
+  }
+
+  .student-dashboard .dashboard-main {
+    overflow-y: visible;
+  }
+
+  .student-dashboard .dashboard-main .container {
+    padding: 20px 16px;
+  }
+
+  .student-dashboard .dashboard-header h1 {
+    font-size: 22px;
+  }
+
+  .student-dashboard .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .student-dashboard .section-card {
+    padding: 16px;
+  }
+
+  .student-dashboard .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .student-dashboard .registrations-table {
+    font-size: 12px;
+  }
+
+  .student-dashboard th,
+  .student-dashboard td {
+    padding: 8px;
   }
 }
 </style>
